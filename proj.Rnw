@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[shortlabels]{enumitem}
+\usepackage{mathtools, amssymb}
+
+\begin{document}
+
+\title{Statistics 135 -- Lab Project}
+\author{}
+\maketitle
+
+\section{Background}
+<<>>=
+data.df <- read.csv('diabetes.csv')
+@
+
+\section{Accessing Data, Visualization and Summarization}
+\begin{enumerate}[1.]
+\item
+
+\item
+
+\item
+
+\item
+
+\item
+
+\item
+\end{enumerate}
+
+\section{Parametric Inferece}
+\begin{enumerate}[1.]
+\item
+
+\item
+
+\item
+\end{enumerate}
+
+\section{Testing}
+\begin{enumerate}[1.]
+\item
+
+\item
+
+\item
+
+\item
+
+\item
+
+\item
+\end{enumerate}
+
+\section{Regression}
+\begin{enumerate}[1.]
+\item
+
+\item
+
+\item
+
+\item
+
+\item
+
+\item
+
+\item
+\end{enumerate}
+\end{document}
