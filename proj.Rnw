@@ -79,17 +79,17 @@ ggplot(data.df) +
 
 \item
 <<cache=TRUE, fig.align="center", fig.pos="H", fig.width=9, fig.height=12>>=
-glyhb.df <- data.frame(data.df, glyhb.cond=NA)
-glyhb.df[glyhb.df$glyhb>=7, ]$glyhb.cond <- "glyhb >= 7"
-glyhb.df[glyhb.df$glyhb<7, ]$glyhb.cond <- "glyhb < 7"
+data.df$glyhb.cond <- NA
+data.df[data.df$glyhb>=7, ]$glyhb.cond <- "glyhb >= 7"
+data.df[data.df$glyhb<7, ]$glyhb.cond <- "glyhb < 7"
 
 features <- c("chol", "stab.glu", "hdl", "ratio", "age", "height", "weight",
               "bp.1s", "bp.1d", "waist", "hip", "time.ppn")
 feature.boxplots = list()
 for (i in 1:length(features)) {
   feature <- features[i]
-  feature.boxplot <- ggplot(data.frame(glyhb.cond=glyhb.df$glyhb.cond,
-                                       feature=glyhb.df[, feature])) +
+  feature.boxplot <- ggplot(data.frame(glyhb.cond=data.df$glyhb.cond,
+                                       feature=data.df[, feature])) +
     geom_boxplot(aes(x=glyhb.cond, y=feature)) +
     labs(x="glyhb", y=feature)
   feature.boxplots[[i]] <- feature.boxplot
@@ -100,6 +100,24 @@ do.call(grid.arrange, c(feature.boxplots, ncol=3,
 @
 
 \item
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=8, fig.height=4>>=
+data.df$BMI <- 703*data.df$weight/data.df$height^2
+data.df$WHR <- data.df$waist/data.df$hip
+
+features <- c("BMI", "WHR")
+feature.boxplots = list()
+for (i in 1:length(features)) {
+  feature <- features[i]
+  feature.boxplot <- ggplot(data.frame(glyhb.cond=data.df$glyhb.cond,
+                                       feature=data.df[, feature])) +
+    geom_boxplot(aes(x=glyhb.cond, y=feature)) +
+    labs(title=paste(c("Boxplot of", feature, "vs glyhb"), collapse=" "),
+         x="glyhb", y=feature)
+  feature.boxplots[[i]] <- feature.boxplot
+}
+
+do.call(grid.arrange, c(feature.boxplots, ncol=2))
+@
 
 \item
 \end{enumerate}
