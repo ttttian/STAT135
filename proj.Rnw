@@ -1,6 +1,6 @@
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
-\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[a4paper, margin=0.75in]{geometry}
 \usepackage[shortlabels]{enumitem}
 \usepackage{mathtools, amssymb}
 
@@ -13,6 +13,8 @@
 \section{Background}
 <<>>=
 library("ggplot2")
+library("grid")
+library("gridExtra")
 
 data.df <- na.omit(read.csv("diabetes.csv"))
 @
@@ -20,19 +22,19 @@ data.df <- na.omit(read.csv("diabetes.csv"))
 \section{Accessing Data, Visualization and Summarization}
 \begin{enumerate}[1.]
 \item
-<<fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
 ggplot(data.df) +
   geom_histogram(aes(x=glyhb), binwidth=0.5) +
   labs(title="Histogram of glyhb") +
   theme(plot.title=element_text(size=rel(1)))
 @
-<<fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
 ggplot(data.df) +
   geom_boxplot(aes(x=factor(0), y=glyhb)) +
   labs(title="Box-plot of glyhb", x="glyhb", y="density") +
   theme(plot.title=element_text(size=rel(1)))
 @
-<<fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
 ggplot(data.df) +
   stat_qq(aes(sample=glyhb)) +
   geom_abline(aes(intercept=mean(glyhb), slope=sd(glyhb))) + 
@@ -40,10 +42,40 @@ ggplot(data.df) +
   theme(plot.title=element_text(size=rel(1)))
 @
 
+\item
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+ggplot(data.df) +
+  geom_histogram(aes(x=chol), binwidth=10) +
+  labs(title="Histogram of chol") +
+  theme(plot.title=element_text(size=rel(1)))
+@
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+ggplot(data.df) +
+  geom_boxplot(aes(x=factor(0), y=chol)) +
+  labs(title="Boxplot of chol", x="chol", y="density") +
+  theme(plot.title=element_text(size=rel(1)))
+@
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+ggplot(data.df) +
+  stat_qq(aes(sample=chol)) +
+  geom_abline(aes(intercept=mean(chol), slope=sd(chol))) + 
+  labs(title="QQ-Plot of chol") +
+  theme(plot.title=element_text(size=rel(1)))
+@
 
 \item
-
-\item
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+ggplot(data.df) +
+  geom_point(aes(x=bp.1d, y=bp.1s)) +
+  labs(title="Scatterplot of bp.1d vs bp.1s") +
+  theme(plot.title=element_text(size=rel(1)))
+@
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+ggplot(data.df) +
+  geom_point(aes(x=height, y=age)) +
+  labs(title="Scatterplot of age vs height") +
+  theme(plot.title=element_text(size=rel(1)))
+@
 
 \item
 
