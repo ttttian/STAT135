@@ -12,12 +12,34 @@
 
 \section{Background}
 <<>>=
-data.df <- read.csv('diabetes.csv')
+library("ggplot2")
+
+data.df <- na.omit(read.csv("diabetes.csv"))
 @
 
 \section{Accessing Data, Visualization and Summarization}
 \begin{enumerate}[1.]
 \item
+<<fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+ggplot(data.df) +
+  geom_histogram(aes(x=glyhb), binwidth=0.5) +
+  labs(title="Histogram of glyhb") +
+  theme(plot.title=element_text(size=rel(1)))
+@
+<<fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+ggplot(data.df) +
+  geom_boxplot(aes(x=factor(0), y=glyhb)) +
+  labs(title="Box-plot of glyhb", x="glyhb", y="density") +
+  theme(plot.title=element_text(size=rel(1)))
+@
+<<fig.align="center", fig.pos="H", fig.height=4, fig.width=4>>=
+ggplot(data.df) +
+  stat_qq(aes(sample=glyhb)) +
+  geom_abline(aes(intercept=mean(glyhb), slope=sd(glyhb))) + 
+  labs(title="QQ-Plot of glyhb") +
+  theme(plot.title=element_text(size=rel(1)))
+@
+
 
 \item
 
