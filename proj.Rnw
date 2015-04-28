@@ -56,16 +56,16 @@ grid.arrange(chol.histogram, chol.boxplot, chol.qqplot, ncol=3,
 @
 
 \item
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=6, fig.height=3>>=
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 bp.1d.bp.1s.scatterplot <- ggplot(data.df) +
   geom_point(aes(x=bp.1d, y=bp.1s)) +
   labs(title="Scatterplot of bp.1d vs bp.1s") +
-  theme(plot.title=element_text(size=rel(1)))
+  theme(text=element_text(size=8.5))
 
 height.age.scatterplot <- ggplot(data.df) +
   geom_point(aes(x=height, y=age)) +
   labs(title="Scatterplot of age vs height") +
-  theme(plot.title=element_text(size=rel(1)))
+  theme(text=element_text(size=8.5))
 
 grid.arrange(bp.1d.bp.1s.scatterplot, height.age.scatterplot, ncol=2)
 @
@@ -93,7 +93,7 @@ do.call(grid.arrange, c(feature.boxplots, ncol=3,
 @
 
 \item
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=6, fig.height=3>>=
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 data.df$BMI <- 703*data.df$weight/data.df$height^2
 data.df$WHR <- data.df$waist/data.df$hip
 
@@ -106,7 +106,7 @@ for (i in 1:length(features)) {
     geom_boxplot(aes(x=glyhb.cond, y=feature)) +
     labs(title=paste(c("Boxplot of", feature, "vs glyhb"), collapse=" "),
          x="glyhb", y=feature) +
-    theme(plot.title=element_text(size=rel(1)))
+    theme(text=element_text(size=8.5))
   feature.boxplots[[i]] <- feature.boxplot
 }
 
