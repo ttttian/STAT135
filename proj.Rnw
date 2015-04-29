@@ -119,6 +119,58 @@ do.call(grid.arrange, c(feature.boxplots, ncol=2))
 \section{Parametric Inferece}
 \begin{enumerate}[1.]
 \item
+$$X \sim Gamma(\alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)}x^{\alpha-1}e^{-\beta x}$$
+$$E(X) = \frac{\alpha}{\beta}$$
+\begin{align*}
+E(X^2) & = Var(X) + [E(X)]^2 \\
+& = \frac{\alpha}{\beta^2} + \left(\frac{\alpha}{\beta}\right)^2 \\
+& = \frac{\alpha(\alpha+1)}{\beta^2}
+\end{align*}
+$$\begin{cases*}
+E(X) = \frac{\alpha}{\beta} \\
+E(X^2) =\frac{\alpha(\alpha+1)}{\beta^2}
+\end{cases*}
+\implies
+\begin{cases*}
+\alpha = \frac{[E(X)]^2}{Var(x)} \\
+\beta = \frac{E(X)}{Var(x)}
+\end{cases*}
+\implies
+\begin{cases*}
+\hat{\alpha}_{MOM} = \frac{\overline{X}_n}{\frac{1}{n}\sum_{i=1}^n(X_i-\overline{X}_n)^2} \\
+\hat{\beta}_{MOM} = \frac{\overline{X}_n^2}{\frac{1}{n}\sum_{i=1}^n(X_i-\overline{X}_n)^2}
+\end{cases*}$$
+
+<<>>=
+alpha.mom <- mean(data.df$BMI)^2/var(data.df$BMI)
+beta.mom <- mean(data.df$BMI)/var(data.df$BMI)
+
+B <- 1000
+BMI.bootstrap <- sapply(1:B, function(x) {
+  BMI.sample <- sample(data.df$BMI, nrow(data.df), replace=TRUE)
+  alpha.sample <- mean(BMI.sample)^2/var(BMI.sample)
+  beta.sample <- mean(BMI.sample)/var(BMI.sample)
+  return(c(alpha.sample, beta.sample))
+})
+CI.BMI <- sapply(1:2, function(x) {
+  CI <- quantile(BMI.bootstrap[x, ], probs=c(0.025, 0.975))
+  return(CI)
+})
+colnames(CI.BMI) <- c("alpha", "beta")
+
+################################################################################
+CI.BMI
+################################################################################
+@
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+ggplot(data.df) +
+  geom_histogram(aes(x=BMI, y=..density..), binwidth=2, col="white") +
+  stat_function(fun=function(x)
+    dgamma(x, shape=alpha.mom, rate=beta.mom), col="white") +
+  labs(title="Fitted Density over the Observed Histogram of BMI") +
+  theme(text=element_text(size=8.5))
+@
+
 
 \item
 
