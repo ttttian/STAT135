@@ -35,7 +35,7 @@ glyhb.qqplot <- ggplot(data.df) +
   geom_abline(aes(intercept=mean(glyhb), slope=sd(glyhb)))
 
 grid.arrange(glyhb.histogram, glyhb.boxplot, glyhb.qqplot, ncol=3,
-             main="Histogram, Boxplot and QQ-plot of glyhb")
+             main="Histogram, boxplot and QQ-plot of glyhb")
 @
 
 \item
@@ -52,7 +52,7 @@ chol.qqplot <- ggplot(data.df) +
   geom_abline(aes(intercept=mean(chol), slope=sd(chol)))
 
 grid.arrange(chol.histogram, chol.boxplot, chol.qqplot, ncol=3,
-             main="Histogram, Boxplot and QQ-plot of chol")
+             main="Histogram, boxplot and QQ-plot of chol")
 @
 
 \item
@@ -79,13 +79,12 @@ data.df[data.df$glyhb<7, ]$glyhb.cond <- "glyhb < 7"
 features <- c("chol", "stab.glu", "hdl", "ratio", "age", "height", "weight",
               "bp.1s", "bp.1d", "waist", "hip", "time.ppn")
 feature.boxplots = list()
-for (i in 1:length(features)) {
-  feature <- features[i]
+for (feature in features) {
   feature.boxplot <- ggplot(data.frame(glyhb.cond=data.df$glyhb.cond,
-                                       feature=data.df[, feature])) +
+                                       feature=data.df[[feature]])) +
     geom_boxplot(aes(x=glyhb.cond, y=feature)) +
     labs(x="glyhb", y=feature)
-  feature.boxplots[[i]] <- feature.boxplot
+  feature.boxplots[[feature]] <- feature.boxplot
 }
 
 do.call(grid.arrange, c(feature.boxplots, ncol=3,
@@ -99,15 +98,14 @@ data.df$WHR <- data.df$waist/data.df$hip
 
 features <- c("BMI", "WHR")
 feature.boxplots = list()
-for (i in 1:length(features)) {
-  feature <- features[i]
+for (feature in features) {
   feature.boxplot <- ggplot(data.frame(glyhb.cond=data.df$glyhb.cond,
-                                       feature=data.df[, feature])) +
+                                       feature=data.df[[feature]])) +
     geom_boxplot(aes(x=glyhb.cond, y=feature)) +
     labs(title=paste(c("Boxplot of", feature, "vs glyhb"), collapse=" "),
          x="glyhb", y=feature) +
     theme(text=element_text(size=8.5))
-  feature.boxplots[[i]] <- feature.boxplot
+  feature.boxplots[[feature]] <- feature.boxplot
 }
 
 do.call(grid.arrange, c(feature.boxplots, ncol=2))
@@ -142,21 +140,27 @@ E(X^2) =\frac{\alpha(\alpha+1)}{\beta^2}
 \end{cases*}$$
 
 <<>>=
-alpha.mom <- mean(data.df$BMI)^2/var(data.df$BMI)
-beta.mom <- mean(data.df$BMI)/var(data.df$BMI)
+gamma.bootstrap <- function(x) {
+  alpha.mom <- mean(x)^2/var(x)
+  beta.mom <- mean(x)/var(x)
 
-BMI.bootstrap <- sapply(1:1000, function(x) {
-  BMI.sample <- sample(data.df$BMI, nrow(data.df), replace=TRUE)
-  alpha.sample <- mean(BMI.sample)^2/var(BMI.sample)
-  beta.sample <- mean(BMI.sample)/var(BMI.sample)
-  return(c(alpha.sample, beta.sample))
-})
+  bootstrap <- sapply(1:1000, function(i) {
+    samples <- sample(x, length(x), replace=TRUE)
+    alpha.sample <- mean(samples)^2/var(samples)
+    beta.sample <- mean(samples)/var(samples)
+    return(c(alpha.sample, beta.sample))
+  })
 
-CI.BMI <- sapply(1:2, function(x) {
-  CI <- quantile(BMI.bootstrap[x, ], probs=c(0.025, 0.975))
-  return(CI)
-})
-colnames(CI.BMI) <- c("alpha", "beta")
+  CIs <- sapply(1:2, function(i) {
+    CI <- quantile(bootstrap[i, ], probs=c(0.025, 0.975))
+    return(CI)
+  })
+  colnames(CIs) <- c("alpha", "beta")
+  
+  return(CIs)
+}
+
+CI.BMI <- gamma.bootstrap(data.df$BMI)
 
 ################################################################################
 CI.BMI
@@ -167,7 +171,7 @@ ggplot(data.df) +
   geom_histogram(aes(x=BMI, y=..density..), binwidth=2, col="white") +
   stat_function(fun=function(x)
     dgamma(x, shape=alpha.mom, rate=beta.mom), col="white") +
-  labs(title="Fitted Density over the Observed Histogram of BMI") +
+  labs(title="Fitted density over observed histogram of BMI") +
   theme(text=element_text(size=8.5))
 @
 
@@ -176,21 +180,27 @@ $$\hat{\mu}_{MLE} = \overline{X}_n$$
 $$\hat{\sigma}_{MLE}^2 = \frac{1}{n}\sum_{i=1}^n(X_i-\overline{X}_n)^2$$
 
 <<>>=
-mu.mle <- mean(data.df$WHR)
-sigma.mle <- sqrt(var(data.df$WHR))
+normal.bootstrap <- function(x) {
+  mu.mle <- mean(x)
+  sigma.mle <- sd(x)
+  
+  bootstrap <- sapply(1:1000, function(i) {
+    samples <- sample(x, length(x), replace=TRUE)
+    mu.sample <- mean(samples)
+    sigma.sample <- sd(samples)
+    return(c(mu.sample, sigma.sample))
+  })
+  
+  CIs <- sapply(1:2, function(i) {
+    CI <- quantile(bootstrap[i, ], probs=c(0.025, 0.975))
+    return(CI)
+  })
+  colnames(CIs) <- c("mu", "sigma")
+  
+  return(CIs)
+}
 
-WHR.bootstrap <- sapply(1:1000, function(x) {
-  WHR.sample <- sample(data.df$WHR, nrow(data.df), replace=TRUE)
-  mu.sample <- mean(WHR.sample)
-  sigma.sample <- sqrt(var(WHR.sample))
-  return(c(mu.sample, sigma.sample))
-})
-
-CI.WHR <- sapply(1:2, function(x) {
-  CI <- quantile(WHR.bootstrap[x, ], probs=c(0.025, 0.975))
-  return(CI)
-})
-colnames(CI.WHR) <- c("mu", "sigma")
+CI.WHR <- normal.bootstrap(data.df$WHR)
 
 ################################################################################
 CI.WHR
@@ -201,12 +211,83 @@ ggplot(data.df) +
   geom_histogram(aes(x=WHR, y=..density..), binwidth=0.025, col="white") +
   stat_function(fun=function(x)
     dnorm(x, mean=mu.mle, sd=sigma.mle), col="white") +
-  labs(title="Fitted Density over the Observed Histogram of WHR") +
+  labs(title="Fitted density over observed histogram of WHR") +
   theme(text=element_text(size=8.5))
 @
 
-
 \item
+<<>>=
+data.df$gender.glyhb.cond <- NA
+data.df[data.df$gender=="male" & data.df$glyhb>=7, ]$gender.glyhb.cond <-
+  "male & (glyhb >= 7)"
+data.df[data.df$gender=="female" & data.df$glyhb>=7, ]$gender.glyhb.cond <-
+  "female & (glyhb >= 7)"
+data.df[data.df$gender=="male" & data.df$glyhb<7, ]$gender.glyhb.cond <-
+  "male & (glyhb < 7)"
+data.df[data.df$gender=="female" & data.df$glyhb<7, ]$gender.glyhb.cond <-
+  "female & (glyhb < 7)"
+
+conditions <- c("male & (glyhb >= 7)", "female & (glyhb >= 7)",
+                "male & (glyhb < 7)", "female & (glyhb < 7)")
+
+gamma.bootstrap2 <- function(x) {
+  alpha.mom <- mean(x)^2/var(x)
+  beta.mom <- mean(x)/var(x)
+
+  bootstrap <- sapply(1:1000, function(i) {
+    samples <- sample(x, length(x), replace=TRUE)
+    mu.sample <- mean(samples)
+    sigma.sample <- sd(samples)
+    return(c(mu.sample, sigma.sample))
+  })
+
+  CIs <- sapply(1:2, function(i) {
+    CI <- quantile(bootstrap[i, ], probs=c(0.025, 0.975))
+    return(CI)
+  })
+  colnames(CIs) <- c("mu", "sigma")
+  
+  return(CIs)
+}
+
+CIs.BMI <- lapply(conditions, function(x) {
+  gender.glyhb.df <- subset(data.df, gender.glyhb.cond==x)
+  CIs.BMI <- gamma.bootstrap2(gender.glyhb.df$BMI)
+  return(CIs.BMI)
+})
+names(CIs.BMI) <- conditions
+
+################################################################################
+CIs.BMI
+################################################################################
+@
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+ggplot(data.df) +
+  geom_boxplot(aes(x=factor(gender.glyhb.cond, levels=conditions), y=BMI)) +
+  labs(title="Boxplots of BMI for each gender and glyhb condition",
+       x="gender & glyhb") +
+  theme(text=element_text(size=8.5))
+@
+<<>>=
+CIs.WHR <- lapply(conditions, function(x) {
+  gender.glyhb.df <- subset(data.df, gender.glyhb.cond==x)
+  CIs.WHR <- normal.bootstrap(gender.glyhb.df$WHR)
+  return(CIs.WHR)
+})
+names(CIs.WHR) <- conditions
+
+################################################################################
+CIs.WHR
+################################################################################
+@
+<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+ggplot(data.df) +
+  geom_boxplot(aes(x=factor(gender.glyhb.cond, levels=conditions), y=WHR)) +
+  labs(title="Boxplots of WHR for each gender and glyhb condition",
+       x="gender & glyhb") +
+  theme(text=element_text(size=8.5))
+@
+
 \end{enumerate}
 
 \section{Testing}
