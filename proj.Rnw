@@ -15,6 +15,7 @@
 library("ggplot2")
 library("grid")
 library("gridExtra")
+library("xtable")
 
 data.df <- na.omit(read.csv("diabetes.csv"))
 @
@@ -84,18 +85,30 @@ The scatterplot of \texttt{bp.1s} and \texttt{bp.1d} is near-linear, so they are
 \item
 \noindent
 \begin{itemize}
-\item \texttt{chol}: The two distributions have small difference, so it may BE a relevant feature.
-\item \texttt{stab.glu}: The two distributions have substantial difference, so it may BE a relevant feature.
-\item \texttt{hdl}: The two distributions have small difference, so it may BE a relevant feature.
-\item \texttt{ratio}: The two distributions have small difference, so it may BE a relevant feature.
-\item \texttt{age}: The two distributions have substantial difference, so it may BE a relevant feature.
-\item \texttt{height}: The two distributions have little difference, so it may NOT BE a relevant feature.
-\item \texttt{weight}: The two distributions have small difference, so it may BE a relevant feature.
-\item \texttt{bp.1s}: The two distributions have small difference, so it may BE a relevant feature.
-\item \texttt{bp.1d}: The two distributions have small difference, so it may BE a relevant feature.
-\item \texttt{waist}: The two distributions have small difference, so it may BE a relevant feature.
-\item \texttt{hip}: The two distributions have small difference, so it may BE a relevant feature.
-\item \texttt{time.ppn}: The two distributions have small difference, so it may NOT BE a relevant feature.
+\item
+\texttt{chol}: The two distributions have small difference, so it may BE a relevant feature.
+\item
+\texttt{stab.glu}: The two distributions have substantial difference, so it may BE a relevant feature.
+\item
+\texttt{hdl}: The two distributions have small difference, so it may BE a relevant feature.
+\item
+\texttt{ratio}: The two distributions have small difference, so it may BE a relevant feature.
+\item
+\texttt{age}: The two distributions have substantial difference, so it may BE a relevant feature.
+\item
+\texttt{height}: The two distributions have little difference, so it may NOT BE a relevant feature.
+\item
+\texttt{weight}: The two distributions have small difference, so it may BE a relevant feature.
+\item
+\texttt{bp.1s}: The two distributions have small difference, so it may BE a relevant feature.
+\item
+\texttt{bp.1d}: The two distributions have small difference, so it may BE a relevant feature.
+\item
+\texttt{waist}: The two distributions have small difference, so it may BE a relevant feature.
+\item
+\texttt{hip}: The two distributions have small difference, so it may BE a relevant feature.
+\item
+\texttt{time.ppn}: The two distributions have small difference, so it may NOT BE a relevant feature.
 \end{itemize}
 
 <<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=12>>=
@@ -142,13 +155,17 @@ do.call(grid.arrange, c(feature.boxplots, ncol=2))
 @
 
 \item
+\noindent
 In light of these first experiments, \texttt{hdl}, \texttt{stab.glu}, \texttt{age}, \texttt{weight}, \texttt{bp.1s}, \texttt{bp.1d}, \texttt{waist} and \texttt{hip} seem related to the presence of type II diabetes; \texttt{chol}, \texttt{ratio}, \texttt{height} and \texttt{time.ppn} seem unrelated to the presence of type II diabetes.
 
 \end{enumerate}
 
+\newpage
+
 \section{Parametric Inference}
 \begin{enumerate}[1.]
 \item
+\noindent
 $$X \sim Gamma(\alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)}x^{\alpha-1}e^{-\beta x}$$
 $$E(X) = \frac{\alpha}{\beta}$$
 \begin{align*}
@@ -171,7 +188,7 @@ E(X^2) =\frac{\alpha(\alpha+1)}{\beta^2}
 \hat{\beta}_{MOM} = \frac{\overline{X}_n^2}{\frac{1}{n}\sum_{i=1}^n(X_i-\overline{X}_n)^2}
 \end{cases*}$$
 
-<<>>=
+<<echo=FALSE>>=
 gamma.bootstrap <- function(x) {
   alpha.mom <- mean(x)^2/var(x)
   beta.mom <- mean(x)/var(x)
@@ -193,12 +210,15 @@ gamma.bootstrap <- function(x) {
 }
 
 CI.BMI <- gamma.bootstrap(data.df$BMI)
+@
 
+<<>>=
 ################################################################################
 CI.BMI
 ################################################################################
 @
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+
+<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 ggplot(data.df) +
   geom_histogram(aes(x=BMI, y=..density..), binwidth=2, col="white") +
   stat_function(fun=function(x)
@@ -207,11 +227,14 @@ ggplot(data.df) +
   theme(text=element_text(size=8.5))
 @
 
+\newpage
+
 \item
+\noindent
 $$\hat{\mu}_{MLE} = \overline{X}_n$$
 $$\hat{\sigma}_{MLE}^2 = \frac{1}{n}\sum_{i=1}^n(X_i-\overline{X}_n)^2$$
 
-<<>>=
+<<echo=FALSE>>=
 normal.bootstrap <- function(x) {
   mu.mle <- mean(x)
   sigma.mle <- sd(x)
@@ -233,12 +256,15 @@ normal.bootstrap <- function(x) {
 }
 
 CI.WHR <- normal.bootstrap(data.df$WHR)
+@
 
+<<>>=
 ################################################################################
 CI.WHR
 ################################################################################
 @
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+
+<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 ggplot(data.df) +
   geom_histogram(aes(x=WHR, y=..density..), binwidth=0.025, col="white") +
   stat_function(fun=function(x)
@@ -247,8 +273,11 @@ ggplot(data.df) +
   theme(text=element_text(size=8.5))
 @
 
+\newpage
+
 \item
-<<>>=
+\noindent
+<<echo=FALSE>>=
 data.df$gender.glyhb.cond <- NA
 data.df[data.df$gender=="male" & data.df$glyhb>=7, ]$gender.glyhb.cond <-
   "male & (glyhb >= 7)"
@@ -288,38 +317,68 @@ CIs.BMI <- lapply(conditions, function(x) {
   return(CIs.BMI)
 })
 names(CIs.BMI) <- conditions
+@
 
+<<>>=
 ################################################################################
 CIs.BMI
 ################################################################################
 @
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+
+<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 ggplot(data.df) +
   geom_boxplot(aes(x=factor(gender.glyhb.cond, levels=conditions), y=BMI)) +
   labs(title="Boxplots of BMI for each gender and glyhb condition",
        x="gender & glyhb") +
   theme(text=element_text(size=8.5))
 @
-<<>>=
+
+\begin{itemize}
+\item
+On average, emales have higher BMI than males.
+\item
+On average, eople with type II diabetes (\texttt{glyhb >= 7}) have higher BMI than people without type II diabetes (\texttt{glyhb < 7}).
+\item
+People with type II diabetes (\texttt{glyhb >= 7}) have larger confidence intervals of both mean and standard deviation than people without type II diabetes (\texttt{glyhb < 7}), regardless of gender.
+\end{itemize}
+
+\newpage
+
+<<echo=FALSE>>=
 CIs.WHR <- lapply(conditions, function(x) {
   gender.glyhb.df <- subset(data.df, gender.glyhb.cond==x)
   CIs.WHR <- normal.bootstrap(gender.glyhb.df$WHR)
   return(CIs.WHR)
 })
 names(CIs.WHR) <- conditions
+@
 
+<<>>=
 ################################################################################
 CIs.WHR
 ################################################################################
 @
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+
+<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 ggplot(data.df) +
   geom_boxplot(aes(x=factor(gender.glyhb.cond, levels=conditions), y=WHR)) +
   labs(title="Boxplots of WHR for each gender and glyhb condition",
        x="gender & glyhb") +
   theme(text=element_text(size=8.5))
 @
+
+\begin{itemize}
+\item
+On average, males have higher WHR than females.
+\item
+On average, people with type II diabetes (\texttt{glyhb >= 7}) have higher WHR than people without type II diabetes (\texttt{glyhb < 7}).
+\item
+People with type II diabetes (\texttt{glyhb >= 7}) have larger confidence intervals of both mean and standard deviation than people without type II diabetes (\texttt{glyhb < 7}), regardless of gender.
+\end{itemize}
+
 \end{enumerate}
+
+\newpage
 
 \section{Testing}
 \begin{enumerate}[1.]
