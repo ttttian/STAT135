@@ -83,7 +83,6 @@ grid.arrange(bp.1d.bp.1s.scatterplot, height.age.scatterplot, ncol=2)
 The scatterplot of \texttt{bp.1s} and \texttt{bp.1d} is near-linear, so they are approximately dependent. The scatterplot of \texttt{age} and \texttt{weight} is random, so they are approximately independent.
 
 \item
-\noindent
 \begin{itemize}
 \item
 \texttt{chol}: The two distributions have small difference, so it MAY BE a relevant feature.
@@ -155,7 +154,6 @@ do.call(grid.arrange, c(feature.boxplots, ncol=2))
 @
 
 \item
-\noindent
 In light of these first experiments, \texttt{hdl}, \texttt{stab.glu}, \texttt{age}, \texttt{weight}, \texttt{bp.1s}, \texttt{bp.1d}, \texttt{waist} and \texttt{hip} seem related to the presence of type II diabetes; \texttt{chol}, \texttt{ratio}, \texttt{height} and \texttt{time.ppn} seem unrelated to the presence of type II diabetes.
 
 \end{enumerate}
@@ -165,7 +163,6 @@ In light of these first experiments, \texttt{hdl}, \texttt{stab.glu}, \texttt{ag
 \section{Parametric Inference}
 \begin{enumerate}[1.]
 \item
-\noindent
 $$X \sim Gamma(\alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)}x^{\alpha-1}e^{-\beta x}$$
 $$E(X) = \frac{\alpha}{\beta}$$
 \begin{align*}
@@ -189,7 +186,7 @@ E(X^2) =\frac{\alpha(\alpha+1)}{\beta^2}
 \end{cases*}$$
 
 <<echo=FALSE>>=
-gamma.bootstrap <- function(x) {
+gamma.boot <- function(x) {
   alpha.mom <- mean(x)^2/var(x)
   beta.mom <- mean(x)/var(x)
 
@@ -209,7 +206,7 @@ gamma.bootstrap <- function(x) {
   return(CIs)
 }
 
-CI.BMI <- gamma.bootstrap(data.df$BMI)
+CI.BMI <- gamma.boot(data.df$BMI)
 @
 
 <<>>=
@@ -230,12 +227,11 @@ ggplot(data.df) +
 \newpage
 
 \item
-\noindent
 $$\hat{\mu}_{MLE} = \overline{X}_n$$
 $$\hat{\sigma}_{MLE}^2 = \frac{1}{n}\sum_{i=1}^n(X_i-\overline{X}_n)^2$$
 
 <<echo=FALSE>>=
-normal.bootstrap <- function(x) {
+normal.boot <- function(x) {
   mu.mle <- mean(x)
   sigma.mle <- sd(x)
 
@@ -255,7 +251,7 @@ normal.bootstrap <- function(x) {
   return(CIs)
 }
 
-CI.WHR <- normal.bootstrap(data.df$WHR)
+CI.WHR <- normal.boot(data.df$WHR)
 @
 
 <<>>=
@@ -276,7 +272,6 @@ ggplot(data.df) +
 \newpage
 
 \item
-\noindent
 <<echo=FALSE>>=
 data.df$gender.glyhb.cond <- NA
 data.df[data.df$gender=="male" & data.df$glyhb>=7, ]$gender.glyhb.cond <-
@@ -291,7 +286,7 @@ data.df[data.df$gender=="female" & data.df$glyhb<7, ]$gender.glyhb.cond <-
 conditions <- c("male & (glyhb >= 7)", "female & (glyhb >= 7)",
                 "male & (glyhb < 7)", "female & (glyhb < 7)")
 
-gamma.bootstrap2 <- function(x) {
+gamma.boot2 <- function(x) {
   alpha.mom <- mean(x)^2/var(x)
   beta.mom <- mean(x)/var(x)
 
@@ -313,7 +308,7 @@ gamma.bootstrap2 <- function(x) {
 
 CIs.BMI <- lapply(conditions, function(x) {
   gender.glyhb.df <- subset(data.df, gender.glyhb.cond==x)
-  CIs.BMI <- gamma.bootstrap2(gender.glyhb.df$BMI)
+  CIs.BMI <- gamma.boot2(gender.glyhb.df$BMI)
   return(CIs.BMI)
 })
 names(CIs.BMI) <- conditions
@@ -347,7 +342,7 @@ People with type II diabetes (\texttt{glyhb >= 7}) have larger confidence interv
 <<echo=FALSE>>=
 CIs.WHR <- lapply(conditions, function(x) {
   gender.glyhb.df <- subset(data.df, gender.glyhb.cond==x)
-  CIs.WHR <- normal.bootstrap(gender.glyhb.df$WHR)
+  CIs.WHR <- normal.boot(gender.glyhb.df$WHR)
   return(CIs.WHR)
 })
 names(CIs.WHR) <- conditions
@@ -383,7 +378,6 @@ People with type II diabetes (\texttt{glyhb >= 7}) have larger confidence interv
 \section{Testing}
 \begin{enumerate}[1.]
 \item
-\noindent
 <<echo=FALSE>>=
 gender.glyhb.cond.table <- matrix(sapply(conditions,
               function(x) nrow(subset(data.df, gender.glyhb.cond==x))), nrow=2)
@@ -404,7 +398,6 @@ Since the $p$-value is 0.6552, which is greater than 0.05, we fail to reject the
 \newpage
 
 \item
-\noindent
 We choose to the non-parametric Kruskal-Wallis test, because it does not rely on the assumed normal distribution and less affected by outliers.
 
 <<>>=
@@ -448,6 +441,53 @@ kruskal.test(data.df$WHR, as.factor(data.df$glyhb.cond))
 Since the $p$-value is 9.95e-05, which is smaller than 0.05, we reject the null hypothesis that \texttt{WHR} has equal means for those with type II diabetes and those without, with 5\% significance interval.
 
 \item
+<<echo=FALSE>>=
+pi.est <- function(x, y) {
+  w <- 0
+  for (i in 1:length(x)) {
+    for (j in 1:length(y)) {
+      w <- w + (x[i] > y[j])
+    }
+  }
+  return(w/(length(x)*length(y)))
+}
+
+male.glyhb.geq7.BMI <-
+  subset(data.df, gender.glyhb.cond=="male & (glyhb >= 7)")$BMI
+male.glyhb.l7.BMI <-
+  subset(data.df, gender.glyhb.cond=="male & (glyhb < 7)")$BMI
+male.glyhb.geq7.WHR <-
+  subset(data.df, gender.glyhb.cond=="male & (glyhb >= 7)")$WHR
+male.glyhb.l7.WHR <-
+  subset(data.df, gender.glyhb.cond=="male & (glyhb < 7)")$WHR
+
+pi.male.BMI <- pi.est(
+  male.glyhb.geq7.BMI,
+  male.glyhb.l7.BMI)
+pi.male.WHR <- pi.est(
+  male.glyhb.geq7.WHR,
+  male.glyhb.l7.WHR)
+
+pi.male.BMI.samples <- sapply(1:1000, function(x)
+  pi.est(sample(male.glyhb.geq7.BMI, length(male.glyhb.geq7.BMI), replace=TRUE),
+         sample(male.glyhb.l7.BMI, length(male.glyhb.l7.BMI), replace=TRUE)))
+CI.pi.male.BMI <- quantile(pi.male.BMI.samples, probs=c(0.025, 0.975))
+
+pi.male.WHR.samples <- sapply(1:1000, function(x)
+  pi.est(sample(male.glyhb.geq7.WHR, length(male.glyhb.geq7.WHR), replace=TRUE),
+         sample(male.glyhb.l7.WHR, length(male.glyhb.l7.WHR), replace=TRUE)))
+CI.pi.male.WHR <- quantile(pi.male.WHR.samples, probs=c(0.025, 0.975))
+@
+
+<<>>=
+################################################################################
+pi.male.BMI
+CI.pi.male.BMI
+################################################################################
+pi.male.WHR
+CI.pi.male.WHR
+################################################################################
+@
 
 \item
 
