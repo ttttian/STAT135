@@ -86,29 +86,29 @@ The scatterplot of \texttt{bp.1s} and \texttt{bp.1d} is near-linear, so they are
 \noindent
 \begin{itemize}
 \item
-\texttt{chol}: The two distributions have small difference, so it may BE a relevant feature.
+\texttt{chol}: The two distributions have small difference, so it MAY BE a relevant feature.
 \item
-\texttt{stab.glu}: The two distributions have substantial difference, so it may BE a relevant feature.
+\texttt{stab.glu}: The two distributions have substantial difference, so it SHOULD BE a relevant feature.
 \item
-\texttt{hdl}: The two distributions have small difference, so it may BE a relevant feature.
+\texttt{hdl}: The two distributions have small difference, so it MAY BE a relevant feature.
 \item
-\texttt{ratio}: The two distributions have small difference, so it may BE a relevant feature.
+\texttt{ratio}: The two distributions have small difference, so it MAY BE a relevant feature.
 \item
-\texttt{age}: The two distributions have substantial difference, so it may BE a relevant feature.
+\texttt{age}: The two distributions have substantial difference, so it SHOULD BE a relevant feature.
 \item
-\texttt{height}: The two distributions have little difference, so it may NOT BE a relevant feature.
+\texttt{height}: The two distributions have little difference, so it MAY NOT BE a relevant feature.
 \item
-\texttt{weight}: The two distributions have small difference, so it may BE a relevant feature.
+\texttt{weight}: The two distributions have small difference, so it MAY BE a relevant feature.
 \item
-\texttt{bp.1s}: The two distributions have small difference, so it may BE a relevant feature.
+\texttt{bp.1s}: The two distributions have small difference, so it MAY BE a relevant feature.
 \item
-\texttt{bp.1d}: The two distributions have small difference, so it may BE a relevant feature.
+\texttt{bp.1d}: The two distributions have small difference, so it MAY BE a relevant feature.
 \item
-\texttt{waist}: The two distributions have small difference, so it may BE a relevant feature.
+\texttt{waist}: The two distributions have small difference, so it MAY BE a relevant feature.
 \item
-\texttt{hip}: The two distributions have small difference, so it may BE a relevant feature.
+\texttt{hip}: The two distributions have small difference, so it MAY BE a relevant feature.
 \item
-\texttt{time.ppn}: The two distributions have small difference, so it may NOT BE a relevant feature.
+\texttt{time.ppn}: The two distributions have small difference, so it MAY NOT BE a relevant feature.
 \end{itemize}
 
 <<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=12>>=
@@ -384,26 +384,68 @@ People with type II diabetes (\texttt{glyhb >= 7}) have larger confidence interv
 \begin{enumerate}[1.]
 \item
 \noindent
-We assume that under null hypothesis, males and females are equally exposed to typo II diabetes.
-
 <<echo=FALSE>>=
-gender.glyhb.table <- matrix(sapply(conditions,
+gender.glyhb.cond.table <- matrix(sapply(conditions,
               function(x) nrow(subset(data.df, gender.glyhb.cond==x))), nrow=2)
-colnames(gender.glyhb.table) <- c("glyhb >= 7", "glyhb < 7")
-rownames(gender.glyhb.table) <- c("male", "female")
+colnames(gender.glyhb.cond.table) <- c("glyhb >= 7", "glyhb < 7")
+rownames(gender.glyhb.cond.table) <- c("male", "female")
 @
 
 <<>>=
 ################################################################################
-gender.glyhb.table
+gender.glyhb.cond.table
 ################################################################################
-fisher.test(gender.glyhb.table)
+fisher.test(gender.glyhb.cond.table)
 ################################################################################
 @
 
-The $p$-value is 0.6552, which is greater than 0.05, so we failed to reject the null hypothesis with 95\% significance level. Therefore, males and females are equally exposed to type II diabetes.
+Since the $p$-value is 0.6552, which is greater than 0.05, we fail to reject the null hypothesis that males and females are equally exposed to type II diabetes, with 5\% significance level.
+
+\newpage
 
 \item
+\noindent
+We choose to the non-parametric Kruskal-Wallis test, because it does not rely on the assumed normal distribution and less affected by outliers.
+
+<<>>=
+################################################################################
+kruskal.test(data.df$hdl, as.factor(data.df$glyhb.cond))
+################################################################################
+@
+
+Since the $p$-value is 0.004748, which is smaller than 0.05, we reject the null hypothesis that \texttt{hdl} has equal means for those with type II diabetes and those without, with 5\% significance interval.
+
+<<>>=
+################################################################################
+kruskal.test(data.df$bp.1s, as.factor(data.df$glyhb.cond))
+################################################################################
+@
+
+Since the $p$-value is 2.034e-06, which is smaller than 0.05, we reject the null hypothesis that \texttt{bp.1s} has equal means for those with type II diabetes and those without, with 5\% significance interval.
+
+<<>>=
+################################################################################
+kruskal.test(data.df$bp.1d, as.factor(data.df$glyhb.cond))
+################################################################################
+@
+
+Since the $p$-value is 0.168, which is greater than 0.05, we fail to reject the null hypothesis that \texttt{bp.1d} has equal means for those with type II diabetes and those without, with 5\% significance interval.
+
+<<>>=
+################################################################################
+kruskal.test(data.df$BMI, as.factor(data.df$glyhb.cond))
+################################################################################
+@
+
+Since the $p$-value is 0.001983, which is smaller than 0.05, we reject the null hypothesis that \texttt{BMI} has equal means for those with type II diabetes and those without, with 5\% significance interval.
+
+<<>>=
+################################################################################
+kruskal.test(data.df$WHR, as.factor(data.df$glyhb.cond))
+################################################################################
+@
+
+Since the $p$-value is 9.95e-05, which is smaller than 0.05, we reject the null hypothesis that \texttt{WHR} has equal means for those with type II diabetes and those without, with 5\% significance interval.
 
 \item
 
