@@ -7,11 +7,11 @@
 \begin{document}
 
 \title{Statistics 135 -- Lab Project}
-\author{}
+\author{Lingtian Cheng, Yixuan Du, Ruijiao Song}
 \maketitle
 
 \section{Background}
-<<>>=
+<<echo=FALSE>>=
 library("ggplot2")
 library("grid")
 library("gridExtra")
@@ -22,7 +22,8 @@ data.df <- na.omit(read.csv("diabetes.csv"))
 \section{Accessing Data, Visualization and Summarization}
 \begin{enumerate}[1.]
 \item
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=9, fig.height=3>>=
+\noindent
+<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=3>>=
 glyhb.histogram <- ggplot(data.df) +
   geom_histogram(aes(x=glyhb), binwidth=0.5)
 
@@ -38,8 +39,11 @@ grid.arrange(glyhb.histogram, glyhb.boxplot, glyhb.qqplot, ncol=3,
              main="Histogram, boxplot and QQ-plot of glyhb")
 @
 
+The mean, median and mode of \texttt{glyhb} are all approximately 5. The distribution of \texttt{glyhb} is left-skewed.
+
 \item
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=9, fig.height=3>>=
+\noindent
+<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=3>>=
 chol.histogram <- ggplot(data.df) +
   geom_histogram(aes(x=chol), binwidth=15)
 
@@ -55,8 +59,13 @@ grid.arrange(chol.histogram, chol.boxplot, chol.qqplot, ncol=3,
              main="Histogram, boxplot and QQ-plot of chol")
 @
 
+The mean, median and mode of \texttt{chol} are all approximately 200. The distribution of \texttt{chol} is better approximated with a Gaussian distribution.
+
+\newpage
+
 \item
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+\noindent
+<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 bp.1d.bp.1s.scatterplot <- ggplot(data.df) +
   geom_point(aes(x=bp.1d, y=bp.1s)) +
   labs(title="Scatterplot of bp.1d vs bp.1s") +
@@ -70,8 +79,26 @@ height.age.scatterplot <- ggplot(data.df) +
 grid.arrange(bp.1d.bp.1s.scatterplot, height.age.scatterplot, ncol=2)
 @
 
+The scatterplot of \texttt{bp.1s} and \texttt{bp.1d} is near-linear, so they are approximately dependent. The scatterplot of \texttt{age} and \texttt{weight} is random, so they are approximately independent.
+
 \item
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=9, fig.height=12>>=
+\noindent
+\begin{itemize}
+\item \texttt{chol}: The two distributions have small difference, so it may BE a relevant feature.
+\item \texttt{stab.glu}: The two distributions have substantial difference, so it may BE a relevant feature.
+\item \texttt{hdl}: The two distributions have small difference, so it may BE a relevant feature.
+\item \texttt{ratio}: The two distributions have small difference, so it may BE a relevant feature.
+\item \texttt{age}: The two distributions have substantial difference, so it may BE a relevant feature.
+\item \texttt{height}: The two distributions have little difference, so it may NOT BE a relevant feature.
+\item \texttt{weight}: The two distributions have small difference, so it may BE a relevant feature.
+\item \texttt{bp.1s}: The two distributions have small difference, so it may BE a relevant feature.
+\item \texttt{bp.1d}: The two distributions have small difference, so it may BE a relevant feature.
+\item \texttt{waist}: The two distributions have small difference, so it may BE a relevant feature.
+\item \texttt{hip}: The two distributions have small difference, so it may BE a relevant feature.
+\item \texttt{time.ppn}: The two distributions have small difference, so it may NOT BE a relevant feature.
+\end{itemize}
+
+<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=12>>=
 data.df$glyhb.cond <- NA
 data.df[data.df$glyhb>=7, ]$glyhb.cond <- "glyhb >= 7"
 data.df[data.df$glyhb<7, ]$glyhb.cond <- "glyhb < 7"
@@ -91,8 +118,11 @@ do.call(grid.arrange, c(feature.boxplots, ncol=3,
                         main="Boxplots of each feature vs glyhb"))
 @
 
+\newpage
+
 \item
-<<cache=TRUE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+\noindent
+<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 data.df$BMI <- 703*data.df$weight/data.df$height^2
 data.df$WHR <- data.df$waist/data.df$hip
 
@@ -112,9 +142,11 @@ do.call(grid.arrange, c(feature.boxplots, ncol=2))
 @
 
 \item
+In light of these first experiments, \texttt{hdl}, \texttt{stab.glu}, \texttt{age}, \texttt{weight}, \texttt{bp.1s}, \texttt{bp.1d}, \texttt{waist} and \texttt{hip} seem related to the presence of type II diabetes; \texttt{chol}, \texttt{ratio}, \texttt{height} and \texttt{time.ppn} seem unrelated to the presence of type II diabetes.
+
 \end{enumerate}
 
-\section{Parametric Inferece}
+\section{Parametric Inference}
 \begin{enumerate}[1.]
 \item
 $$X \sim Gamma(\alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)}x^{\alpha-1}e^{-\beta x}$$
@@ -156,7 +188,7 @@ gamma.bootstrap <- function(x) {
     return(CI)
   })
   colnames(CIs) <- c("alpha", "beta")
-  
+
   return(CIs)
 }
 
@@ -183,20 +215,20 @@ $$\hat{\sigma}_{MLE}^2 = \frac{1}{n}\sum_{i=1}^n(X_i-\overline{X}_n)^2$$
 normal.bootstrap <- function(x) {
   mu.mle <- mean(x)
   sigma.mle <- sd(x)
-  
+
   bootstrap <- sapply(1:1000, function(i) {
     samples <- sample(x, length(x), replace=TRUE)
     mu.sample <- mean(samples)
     sigma.sample <- sd(samples)
     return(c(mu.sample, sigma.sample))
   })
-  
+
   CIs <- sapply(1:2, function(i) {
     CI <- quantile(bootstrap[i, ], probs=c(0.025, 0.975))
     return(CI)
   })
   colnames(CIs) <- c("mu", "sigma")
-  
+
   return(CIs)
 }
 
@@ -246,7 +278,7 @@ gamma.bootstrap2 <- function(x) {
     return(CI)
   })
   colnames(CIs) <- c("mu", "sigma")
-  
+
   return(CIs)
 }
 
@@ -287,7 +319,6 @@ ggplot(data.df) +
        x="gender & glyhb") +
   theme(text=element_text(size=8.5))
 @
-
 \end{enumerate}
 
 \section{Testing}
