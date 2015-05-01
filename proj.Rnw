@@ -335,9 +335,9 @@ ggplot(data.df) +
 
 \begin{itemize}
 \item
-On average, emales have higher BMI than males.
+On average, females have higher BMI than males.
 \item
-On average, eople with type II diabetes (\texttt{glyhb >= 7}) have higher BMI than people without type II diabetes (\texttt{glyhb < 7}).
+On average, people with type II diabetes (\texttt{glyhb >= 7}) have higher BMI than people without type II diabetes (\texttt{glyhb < 7}).
 \item
 People with type II diabetes (\texttt{glyhb >= 7}) have larger confidence intervals of both mean and standard deviation than people without type II diabetes (\texttt{glyhb < 7}), regardless of gender.
 \end{itemize}
@@ -383,6 +383,25 @@ People with type II diabetes (\texttt{glyhb >= 7}) have larger confidence interv
 \section{Testing}
 \begin{enumerate}[1.]
 \item
+\noindent
+We assume that under null hypothesis, males and females are equally exposed to typo II diabetes.
+
+<<echo=FALSE>>=
+gender.glyhb.table <- matrix(sapply(conditions,
+              function(x) nrow(subset(data.df, gender.glyhb.cond==x))), nrow=2)
+colnames(gender.glyhb.table) <- c("glyhb >= 7", "glyhb < 7")
+rownames(gender.glyhb.table) <- c("male", "female")
+@
+
+<<>>=
+################################################################################
+gender.glyhb.table
+################################################################################
+fisher.test(gender.glyhb.table)
+################################################################################
+@
+
+The $p$-value is 0.6552, which is greater than 0.05, so we failed to reject the null hypothesis with 95\% significance level. Therefore, males and females are equally exposed to type II diabetes.
 
 \item
 
