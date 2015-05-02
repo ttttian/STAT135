@@ -11,7 +11,7 @@
 \maketitle
 
 \section{Background}
-<<Q1, cache=TRUE, echo=FALSE>>=
+<<Q1, echo=FALSE>>=
 library("ggplot2")
 library("grid")
 library("gridExtra")
@@ -110,16 +110,16 @@ The scatterplot of \texttt{bp.1s} and \texttt{bp.1d} is near-linear, so they are
 \end{itemize}
 
 <<Q2.4, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=12>>=
-data.df$glyhb.cond <- NA
-data.df[data.df$glyhb>=7, ]$glyhb.cond <- "glyhb >= 7"
-data.df[data.df$glyhb<7, ]$glyhb.cond <- "glyhb < 7"
+data.df <- transform(data.df,
+                     glyhb.cond=ifelse(glyhb>=7, "glyhb >=7", "glyhb < 7"))
 
 features <- c("chol", "stab.glu", "hdl", "ratio", "age", "height", "weight",
               "bp.1s", "bp.1d", "waist", "hip", "time.ppn")
 feature.boxplots = list()
 for (feature in features) {
-  feature.boxplot <- ggplot(data.frame(glyhb.cond=data.df$glyhb.cond,
-                                       feature=data.df[[feature]])) +
+  feature.boxplot <-
+    ggplot(data.frame(glyhb.cond=data.df$glyhb.cond,
+                      feature=data.df[[feature]])) +
     geom_boxplot(aes(x=glyhb.cond, y=feature)) +
     labs(x="glyhb", y=feature)
   feature.boxplots[[feature]] <- feature.boxplot
@@ -140,8 +140,9 @@ data.df$WHR <- data.df$waist/data.df$hip
 features <- c("BMI", "WHR")
 feature.boxplots = list()
 for (feature in features) {
-  feature.boxplot <- ggplot(data.frame(glyhb.cond=data.df$glyhb.cond,
-                                       feature=data.df[[feature]])) +
+  feature.boxplot <-
+    ggplot(data.frame(glyhb.cond=data.df$glyhb.cond,
+                      feature=data.df[[feature]])) +
     geom_boxplot(aes(x=glyhb.cond, y=feature)) +
     labs(title=paste(c("Boxplot of", feature, "vs glyhb"), collapse=" "),
          x="glyhb", y=feature) +
@@ -272,15 +273,10 @@ ggplot(data.df) +
 
 \item
 <<Q3.3.1, cache=TRUE, echo=FALSE>>=
-data.df$gender.glyhb.cond <- NA
-data.df[data.df$gender=="male" & data.df$glyhb>=7, ]$gender.glyhb.cond <-
-  "male & (glyhb >= 7)"
-data.df[data.df$gender=="female" & data.df$glyhb>=7, ]$gender.glyhb.cond <-
-  "female & (glyhb >= 7)"
-data.df[data.df$gender=="male" & data.df$glyhb<7, ]$gender.glyhb.cond <-
-  "male & (glyhb < 7)"
-data.df[data.df$gender=="female" & data.df$glyhb<7, ]$gender.glyhb.cond <-
-  "female & (glyhb < 7)"
+data.df <- transform(data.df,
+  gender.glyhb.cond=ifelse(gender=="male",
+    ifelse(glyhb>=7, "male & (glyhb >= 7)", "male & (glyhb < 7)"),
+    ifelse(glyhb>=7, "female & (glyhb >= 7)", "female & (glyhb < 7)")))
 
 conditions <- c("male & (glyhb >= 7)", "female & (glyhb >= 7)",
                 "male & (glyhb < 7)", "female & (glyhb < 7)")
@@ -377,14 +373,14 @@ People with type II diabetes (\texttt{glyhb >= 7}) have larger confidence interv
 \section{Testing}
 \begin{enumerate}[1.]
 \item
-<<echo=FALSE>>=
-gender.glyhb.cond.table <- matrix(sapply(conditions,
-              function(x) nrow(subset(data.df, gender.glyhb.cond==x))), nrow=2)
+<<Q4.1.1, cache=TRUE, echo=FALSE>>=
+gender.glyhb.cond.table <- matrix(sapply(conditions, function(x)
+  nrow(subset(data.df, gender.glyhb.cond==x))), nrow=2)
 colnames(gender.glyhb.cond.table) <- c("glyhb >= 7", "glyhb < 7")
 rownames(gender.glyhb.cond.table) <- c("male", "female")
 @
 
-<<>>=
+<<Q4.1.2>>=
 ################################################################################
 gender.glyhb.cond.table
 ################################################################################
@@ -399,48 +395,48 @@ Since the $p$-value is 0.6552, which is greater than 0.05, we fail to reject the
 \item
 We choose to the non-parametric Kruskal-Wallis test, because it does not rely on the assumed normal distribution and less affected by outliers.
 
-<<>>=
+<<Q4.2.1>>=
 ################################################################################
 kruskal.test(data.df$hdl, as.factor(data.df$glyhb.cond))
 ################################################################################
 @
 
-Since the $p$-value is 0.004748, which is smaller than 0.05, we reject the null hypothesis that \texttt{hdl} has equal means for those with type II diabetes and those without, with 5\% significance interval.
+Since the $p$-value is 0.004748, which is smaller than 0.05, we reject the null hypothesis that \texttt{hdl} has equal means for those with type II diabetes and those without, with 5\% significance level.
 
-<<>>=
+<<Q4.2.2>>=
 ################################################################################
 kruskal.test(data.df$bp.1s, as.factor(data.df$glyhb.cond))
 ################################################################################
 @
 
-Since the $p$-value is 2.034e-06, which is smaller than 0.05, we reject the null hypothesis that \texttt{bp.1s} has equal means for those with type II diabetes and those without, with 5\% significance interval.
+Since the $p$-value is 2.034e-06, which is smaller than 0.05, we reject the null hypothesis that \texttt{bp.1s} has equal means for those with type II diabetes and those without, with 5\% significance level.
 
-<<>>=
+<<Q4.2.3>>=
 ################################################################################
 kruskal.test(data.df$bp.1d, as.factor(data.df$glyhb.cond))
 ################################################################################
 @
 
-Since the $p$-value is 0.168, which is greater than 0.05, we fail to reject the null hypothesis that \texttt{bp.1d} has equal means for those with type II diabetes and those without, with 5\% significance interval.
+Since the $p$-value is 0.168, which is greater than 0.05, we fail to reject the null hypothesis that \texttt{bp.1d} has equal means for those with type II diabetes and those without, with 5\% significance level.
 
-<<>>=
+<<Q4.2.4>>=
 ################################################################################
 kruskal.test(data.df$BMI, as.factor(data.df$glyhb.cond))
 ################################################################################
 @
 
-Since the $p$-value is 0.001983, which is smaller than 0.05, we reject the null hypothesis that \texttt{BMI} has equal means for those with type II diabetes and those without, with 5\% significance interval.
+Since the $p$-value is 0.001983, which is smaller than 0.05, we reject the null hypothesis that \texttt{BMI} has equal means for those with type II diabetes and those without, with 5\% significance level.
 
-<<>>=
+<<Q4.2.5>>=
 ################################################################################
 kruskal.test(data.df$WHR, as.factor(data.df$glyhb.cond))
 ################################################################################
 @
 
-Since the $p$-value is 9.95e-05, which is smaller than 0.05, we reject the null hypothesis that \texttt{WHR} has equal means for those with type II diabetes and those without, with 5\% significance interval.
+Since the $p$-value is 9.95e-05, which is smaller than 0.05, we reject the null hypothesis that \texttt{WHR} has equal means for those with type II diabetes and those without, with 5\% significance level.
 
 \item
-<<cache=TRUE, echo=FALSE>>=
+<<Q4.3.1, cache=TRUE, echo=FALSE>>=
 pi.est <- function(x, y) {
   w <- 0
   for (i in 1:length(x)) {
@@ -478,7 +474,7 @@ pi.male.WHR.samples <- sapply(1:1000, function(x)
 CI.pi.male.WHR <- quantile(pi.male.WHR.samples, probs=c(0.025, 0.975))
 @
 
-<<>>=
+<<Q4.3.2>>=
 ################################################################################
 pi.male.BMI
 CI.pi.male.BMI
@@ -491,7 +487,7 @@ CI.pi.male.WHR
 \newpage
 
 \item
-From 3.2, we know that \texttt{WHR} has a normal distribution. We assume all patients come from the same population, so the standard deviation is constant.
+From part 3.3, we know that \texttt{WHR} has a normal distribution. We assume all patients come from the same population, so the standard deviation is constant.
 
 $$H_0: N(\mu_0, \sigma^2)$$
 $$H_1: N(\mu_1, \sigma^2)$$
@@ -553,10 +549,124 @@ power
 
 $$\alpha \leqslant 5\% \implies 1-\beta \leqslant 0.1555122$$
 
-\item
+We construct a test for type II diabetes for male patient that we reject the null hypothesis if his \texttt{WHR} $\geqslant$ 1.01804. The significance of the test is $\leqslant$ 5\% and the power of the test is $\leqslant$ 0.1555122.
+
+\newpage
 
 \item
+<<Q4.5.1, cache=TRUE, echo=FALSE>>=
+BMI.labels <- c("Underweight", "Healthy", "Overweight",
+                       "Level 1 Obese", "Level 2 Obese", "Level 3 Obese")
+data.df$BMI.std <- cut(data.df$BMI, breaks=c(0, 18.5, 25, 30, 35, 40, Inf),
+                       labels=BMI.labels, right=F)
+
+gender.BMI.categories <- cbind(table(subset(data.df, gender=="male")$BMI.std),
+                               table(subset(data.df, gender=="female")$BMI.std))
+colnames(gender.BMI.categories) <- c("male", "female")
+@
+
+<<Q4.5.2, warning=FALSE>>=
+################################################################################
+gender.BMI.categories
+################################################################################
+chisq.test(gender.BMI.categories)
+################################################################################
+@
+
+Since the $p$-value is 0.0001191, which is smaller than 0.05, we reject the null hypothesis that male and female population sample has homogeneous distribution of BMI categories, with 5\% significance level.
+
+<<Q4.5.3, cache=TRUE, echo=FALSE>>=
+WHR.labels <- c("Low", "Moderate", "High", "Very High")
+data.df$WHR.std <- factor(NA)
+levels(data.df$WHR.std) <- WHR.labels
+
+gender.age.cond <-
+  data.df$gender=="male" & data.df$age >= 20 & data.df$age <= 29
+data.df[gender.age.cond, ]$WHR.std <-
+  cut(data.df[gender.age.cond, ]$WHR,
+      breaks=c(0, 0.83, 0.88, 0.94, Inf), labels=WHR.labels)
+
+gender.age.cond <-
+  data.df$gender=="male" & data.df$age >= 30 & data.df$age <= 39
+data.df[gender.age.cond, ]$WHR.std <-
+  cut(data.df[gender.age.cond, ]$WHR,
+      breaks=c(0, 0.84, 0.91, 0.96, Inf), labels=WHR.labels)
+
+gender.age.cond <-
+  data.df$gender=="male" & data.df$age >= 40 & data.df$age <= 49
+data.df[gender.age.cond, ]$WHR.std <-
+  cut(data.df[gender.age.cond, ]$WHR,
+      breaks=c(0, 0.88, 0.95, 1, Inf), labels=WHR.labels)
+
+gender.age.cond <-
+  data.df$gender=="male" & data.df$age >= 50 & data.df$age <= 59
+data.df[gender.age.cond, ]$WHR.std <-
+  cut(data.df[gender.age.cond, ]$WHR,
+      breaks=c(0, 0.90, 0.96, 1.02, Inf), labels=WHR.labels)
+
+gender.age.cond <-
+  data.df$gender=="male" & data.df$age >= 60
+data.df[gender.age.cond, ]$WHR.std <-
+  cut(data.df[gender.age.cond, ]$WHR,
+      breaks=c(0, 0.91, 0.98, 1.03, Inf), labels=WHR.labels)
+
+gender.age.cond <-
+  data.df$gender=="female" & data.df$age >= 20 & data.df$age <= 29
+data.df[gender.age.cond, ]$WHR.std <-
+  cut(data.df[gender.age.cond, ]$WHR,
+      breaks=c(0, 0.71, 0.77, 0.82, Inf), labels=WHR.labels)
+
+gender.age.cond <-
+  data.df$gender=="female" & data.df$age >= 30 & data.df$age <= 39
+data.df[gender.age.cond, ]$WHR.std <-
+  cut(data.df[gender.age.cond, ]$WHR,
+      breaks=c(0, 0.72, 0.78, 0.84, Inf), labels=WHR.labels)
+
+gender.age.cond <-
+  data.df$gender=="female" & data.df$age >= 40 & data.df$age <= 49
+data.df[gender.age.cond, ]$WHR.std <-
+  cut(data.df[gender.age.cond, ]$WHR,
+      breaks=c(0, 0.73, 0.79, 0.87, Inf), labels=WHR.labels)
+
+gender.age.cond <-
+  data.df$gender=="female" & data.df$age >= 50 & data.df$age <= 59
+data.df[gender.age.cond, ]$WHR.std <-
+  cut(data.df[gender.age.cond, ]$WHR,
+      breaks=c(0, 0.74, 0.81, 0.88, Inf), labels=WHR.labels)
+
+gender.age.cond <-
+  data.df$gender=="female" & data.df$age >= 60
+data.df[gender.age.cond, ]$WHR.std <-
+  cut(data.df[gender.age.cond, ]$WHR,
+      breaks=c(0, 0.76, 0.83, 0.9, Inf), labels=WHR.labels)
+
+gender.WHR.categories <- cbind(table(subset(data.df, gender=="male")$WHR.std),
+                               table(subset(data.df, gender=="female")$WHR.std))
+colnames(gender.WHR.categories) <- c("male", "female")
+@
+
+<<Q4.5.4>>=
+################################################################################
+gender.WHR.categories
+################################################################################
+chisq.test(gender.WHR.categories)
+################################################################################
+@
+
+Since the $p$-value is 2.2e-16, which is smaller than 0.05, we reject the null hypothesis that male and female population sample has homogeneous distribution of WHR categories, with 5\% significance level.
+
+\item
+<<Q4.6.1>>=
+################################################################################
+summary(aov(glyhb ~ BMI.std * WHR.std, data.df))
+################################################################################
+@
+
+The interaction effect between \texttt{BMI} and \texttt{WHR} is not significant. \texttt{BMI} is more sensitive to \texttt{glyhb}. Overall, the result is consistent with part 3.3.
+
 \end{enumerate}
+
+\newpage
 
 \section{Regression}
 \begin{enumerate}[1.]
@@ -641,4 +751,33 @@ $$\alpha \leqslant 5\% \implies 1-\beta \leqslant 0.1555122$$
 \end{enumerate}
 
 \subsection{Testing}
+\begin{enumerate}[1.]
+\item
+<<eval=FALSE>>=
+<<Q4.1.1>>
+@
+
+\addtocounter{enumi}{1}
+
+\item
+<<eval=FALSE>>=
+<<Q4.3.1>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q4.4.1>>
+
+<<Q4.4.3>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q4.5.1>>
+
+<<Q4.5.3>>
+@
+
+\subsection{Regression}
+\end{enumerate}
 \end{document}
