@@ -671,36 +671,27 @@ The interaction effect between \texttt{BMI} and \texttt{WHR} is not significant.
 \section{Regression}
 \begin{enumerate}[1.]
 \item
-According to the result from part 2.2, we consider \texttt{stab.glu} the most relevant feature for predicting type II diabetes.
+According to the result from part 2.2, we consider \texttt{stab.glu}, \texttt{age}, \texttt{BMI} and \texttt{WHR} the most relevant features for predicting type II diabetes.
 
-<<Q5.1.1, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
-glyhb.stab.glu.lm <- lm(glyhb ~ stab.glu, data.df)
-coeff <- unname(coefficients(glyhb.stab.glu.lm))
-glyhb.fit <- predict(glyhb.stab.glu.lm, data.df)
-
-ggplot(data.df) +
-  geom_point(aes(x=stab.glu, y=glyhb)) +
-  geom_abline(aes(intercept=coeff[1], slope=coeff[2])) +
-  labs(title="Fitted plot of glyhb vs stab.glu") +
-  theme(text=element_text(size=8.5))
-
-ggplot(data.df) +
-  geom_point(aes(x=stab.glu, y=glyhb-glyhb.fit)) +
-  geom_abline(aes(intercept=0, slope=0)) +
-  labs(title="Residuals plot of glyhb vs stab.glu") +
-  theme(text=element_text(size=8.5))
+<<Q5.1.1, cache=TRUE, echo=FALSE>>=
+glyhb.lm <-
+  lm(glyhb ~ scale(stab.glu) + scale(age) + scale(BMI) + scale(WHR), data.df)
+glyhb.fit <- predict(glyhb.lm, data.df)
 
 threshold <- function(y, lambda) {
   return(ifelse(y > lambda, 1, 0))
 }
 
-err.rate <- mean(sapply(data.df$glyhb, function(x) threshold(x, 7)) ==
-                  sapply(glyhb.fit, function(x) threshold(x, 7)))
+err.rate <- function(lambda) {
+  rate <- mean(sapply(data.df$glyhb, function(x) threshold(x, lambda)) !=
+                 sapply(glyhb.fit, function(x) threshold(x, lambda)))
+  return(rate)
+}
 @
 
 <<Q5.1.2>>=
 ################################################################################
-err.rate
+err.rate(lambda=7)
 ################################################################################
 @
 
@@ -726,11 +717,27 @@ false.neg.rate(lambda=7)
 ################################################################################
 @
 
-The False Negatives Rate is 5.57\%, which already meets the specifications. The False Positives Rate is 1.95\%.
+The False Negatives Rate is 5.29\%, which already meets the specifications. The False Positives Rate is 1.95\%.
 
 \item
+<<Q5.3.1>>=
+################################################################################
+coefficients(glyhb.lm)
+################################################################################
+@
+
+\texttt{stab.glu} has the largest influence.
+
+<<Q5.3.2>>=
+################################################################################
+summary(lm(glyhb ~ hdl + bp.1s + bp.1d, data.df))
+################################################################################
+@
+
+Since the $p$-value is 9.485e-07, we reject the null hypothesis that \texttt{hdl}, \texttt{bp.1s} and \texttt{bp.1d} do not have any predictive value, with 5\% significance level.
 
 \item
+According to the result from 4.6, \texttt{BMI} and \texttt{WHR} do not interact. However, if they do interact, we would choose the feature with larger influence (\texttt{BMI} in this case), because the interaction effect will reduce the influence.
 
 \item
 
