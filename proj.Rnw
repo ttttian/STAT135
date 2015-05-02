@@ -487,7 +487,7 @@ CI.pi.male.WHR
 \newpage
 
 \item
-From part 3.3, we know that \texttt{WHR} has a normal distribution. We assume all patients come from the same population, so the standard deviation is constant.
+According to the result from part 3.2, we know that \texttt{WHR} has a normal distribution. We assume all patients come from the same population, so the standard deviation is constant.
 
 $$H_0: N(\mu_0, \sigma^2)$$
 $$H_1: N(\mu_1, \sigma^2)$$
@@ -671,6 +671,38 @@ The interaction effect between \texttt{BMI} and \texttt{WHR} is not significant.
 \section{Regression}
 \begin{enumerate}[1.]
 \item
+According to the result from part 2.2, we consider \texttt{stab.glu} the most relevant feature for predicting type II diabetes.
+
+<<Q5.1.1, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+glyhb.stab.glu.lm <- lm(glyhb ~ stab.glu, data.df)
+coeff <- unname(coefficients(glyhb.stab.glu.lm))
+glyhb.fit <- predict(glyhb.stab.glu.lm, data.df)
+
+ggplot(data.df) +
+  geom_point(aes(x=stab.glu, y=glyhb)) +
+  geom_abline(aes(intercept=coeff[1], slope=coeff[2])) +
+  labs(title="Fitted plot of glyhb vs stab.glu") +
+  theme(text=element_text(size=8.5))
+
+ggplot(data.df) +
+  geom_point(aes(x=stab.glu, y=glyhb-glyhb.fit)) +
+  geom_abline(aes(intercept=0, slope=0)) +
+  labs(title="Residuals plot of glyhb vs stab.glu") +
+  theme(text=element_text(size=8.5))
+
+threshold <- function(y, lambda) {
+  return(ifelse(y > lambda, 1, 0))
+}
+
+err.rate <- mean(sapply(data.df$glyhb, function(x) threshold(x, 7)) ==
+                  sapply(glyhb.fit, function(x) threshold(x, 7)))
+@
+
+<<Q5.1.2>>=
+################################################################################
+err.rate
+################################################################################
+@
 
 \item
 
@@ -777,7 +809,13 @@ The interaction effect between \texttt{BMI} and \texttt{WHR} is not significant.
 
 <<Q4.5.3>>
 @
+\end{enumerate}
 
 \subsection{Regression}
+\begin{enumerate}[1.]
+\item
+<<eval=FALSE>>=
+<<Q5.1.1>>
+@
 \end{enumerate}
 \end{document}
