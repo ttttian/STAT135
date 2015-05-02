@@ -217,6 +217,9 @@ CI.BMI
 @
 
 <<Q3.1.3, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+alpha.mom <- with(data.df, mean(BMI)^2/var(BMI))
+beta.mom <- with(data.df, mean(BMI)/var(BMI))
+
 ggplot(data.df) +
   geom_histogram(aes(x=BMI, y=..density..), binwidth=2, col="white") +
   stat_function(fun=function(x)
@@ -262,6 +265,9 @@ CI.WHR
 @
 
 <<Q3.2.3, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+mu.mle <- with(data.df, mean(WHR))
+sigma.mle <- with(data.df, sd(WHR))
+
 ggplot(data.df) +
   geom_histogram(aes(x=WHR, y=..density..), binwidth=0.025, col="white") +
   stat_function(fun=function(x)
@@ -757,7 +763,8 @@ glyhb.lm.fit <- predict(glyhb.lm, data.df)
 
 ggplot(data.df) +
   geom_point(aes(x=glyhb.lm.fit, y=scale(glyhb-glyhb.lm.fit))) +
-  labs(title="Residuals plot of glyhb", x="predicted values", y="standardized residuals") +
+  labs(title="Residuals plot of glyhb",
+       x="predicted values", y="standardized residuals") +
   theme(text=element_text(size=8.5))
 @
 
@@ -794,7 +801,8 @@ glyhb.test.lm.fit <- predict(glyhb.lm, test.df)
 glyhb.test.glm.fit <- predict(glyhb.glm, test.df, type="response")
 
 lm.test.err.rate <- lm.err.rate(test.df$glyhb, glyhb.test.lm.fit, lambda=7)
-glm.test.err.rate <- glm.err.rate(test.df$glyhb.cond, glyhb.test.glm.fit, lambda=0.5)
+glm.test.err.rate <-
+  glm.err.rate(test.df$glyhb.cond, glyhb.test.glm.fit, lambda=0.5)
 @
 
 <<Q5.7.2>>=
