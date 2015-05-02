@@ -388,7 +388,7 @@ fisher.test(gender.glyhb.cond.table)
 ################################################################################
 @
 
-Since the $p$-value is 0.6552, which is greater than 0.05, we fail to reject the null hypothesis that males and females are equally exposed to type II diabetes, with 5\% significance level.
+Since the $p$-value is 0.655, which is greater than 0.05, we fail to reject the null hypothesis that males and females are equally exposed to type II diabetes, with 5\% significance level.
 
 \newpage
 
@@ -401,7 +401,7 @@ kruskal.test(data.df$hdl, as.factor(data.df$glyhb.cond))
 ################################################################################
 @
 
-Since the $p$-value is 0.004748, which is smaller than 0.05, we reject the null hypothesis that \texttt{hdl} has equal means for those with type II diabetes and those without, with 5\% significance level.
+Since the $p$-value is 0.00475, which is smaller than 0.05, we reject the null hypothesis that \texttt{hdl} has equal means for those with type II diabetes and those without, with 5\% significance level.
 
 <<Q4.2.2>>=
 ################################################################################
@@ -425,7 +425,7 @@ kruskal.test(data.df$BMI, as.factor(data.df$glyhb.cond))
 ################################################################################
 @
 
-Since the $p$-value is 0.001983, which is smaller than 0.05, we reject the null hypothesis that \texttt{BMI} has equal means for those with type II diabetes and those without, with 5\% significance level.
+Since the $p$-value is 0.00198, which is smaller than 0.05, we reject the null hypothesis that \texttt{BMI} has equal means for those with type II diabetes and those without, with 5\% significance level.
 
 <<Q4.2.5>>=
 ################################################################################
@@ -506,7 +506,7 @@ sd.male.WHR
 ################################################################################
 @
 
-$$\mu_0 = 0.9058419, \mu_1 = 0.9489365, \sigma = 0.06821165$$
+$$\mu_0 = 0.906, \mu_1 = 0.949, \sigma = 0.0682$$
 
 \begin{align*}
 lik(x) & = \frac{f_0(x)}{f_1(x)} \\
@@ -547,9 +547,9 @@ power
 ################################################################################
 @
 
-$$\alpha \leqslant 5\% \implies 1-\beta \leqslant 0.1555122$$
+$$\alpha \leqslant 5\% \implies 1-\beta \leqslant 0.156$$
 
-We construct a test for type II diabetes for male patient that we reject the null hypothesis if his \texttt{WHR} $\geqslant$ 1.01804. The significance of the test is $\leqslant$ 5\% and the power of the test is $\leqslant$ 0.1555122.
+We construct a test for type II diabetes for male patient that we reject the null hypothesis if his \texttt{WHR} $\geqslant$ 1.018. The significance of the test is $\leqslant$ 5\% and the power of the test is $\leqslant$ 0.156.
 
 \newpage
 
@@ -573,7 +573,7 @@ chisq.test(gender.BMI.categories)
 ################################################################################
 @
 
-Since the $p$-value is 0.0001191, which is smaller than 0.05, we reject the null hypothesis that male and female population sample has homogeneous distribution of BMI categories, with 5\% significance level.
+Since the $p$-value is 0.000119, which is smaller than 0.05, we reject the null hypothesis that male and female population sample has homogeneous distribution of BMI categories, with 5\% significance level.
 
 <<Q4.5.3, cache=TRUE, echo=FALSE>>=
 WHR.labels <- c("Low", "Moderate", "High", "Very High")
@@ -705,6 +705,28 @@ err.rate
 @
 
 \item
+<<Q5.2.1, cache=TRUE, echo=FALSE>>=
+false.pos.rate <- function(lambda) {
+  rate <- mean(sapply(data.df$glyhb, function(x) threshold(x, lambda)) <
+                 sapply(glyhb.fit, function(x) threshold(x, lambda)))
+  return(rate)
+}
+
+false.neg.rate <- function(lambda) {
+  rate <- mean(sapply(data.df$glyhb, function(x) threshold(x, lambda)) >
+                 sapply(glyhb.fit, function(x) threshold(x, lambda)))
+  return(rate)
+}
+@
+
+<<Q5.2.2>>=
+################################################################################
+false.pos.rate(lambda=7)
+false.neg.rate(lambda=7)
+################################################################################
+@
+
+The False Negatives Rate is 5.57\%, which already meets the specifications. The False Positives Rate is 1.95\%.
 
 \item
 
@@ -816,6 +838,11 @@ err.rate
 \item
 <<eval=FALSE>>=
 <<Q5.1.1>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q5.2.1>>
 @
 \end{enumerate}
 \end{document}
