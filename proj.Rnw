@@ -17,6 +17,7 @@ library("grid")
 library("gridExtra")
 
 data.df <- na.omit(read.csv("diabetes.csv"))
+test.df <- read.csv("diabetes_test.csv")
 @
 
 \section{Accessing Data, Visualization and Summarization}
@@ -134,8 +135,8 @@ do.call(grid.arrange, c(feature.boxplots, ncol=3,
 \item
 \noindent
 <<Q2.5, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
-data.df$BMI <- 703*data.df$weight/data.df$height^2
-data.df$WHR <- data.df$waist/data.df$hip
+data.df <- transform(data.df, BMI=703*weight/height^2)
+data.df <- transform(data.df, WHR=waist/hip)
 
 features <- c("BMI", "WHR")
 feature.boxplots = list()
@@ -671,58 +672,65 @@ The interaction effect between \texttt{BMI} and \texttt{WHR} is not significant.
 \section{Regression}
 \begin{enumerate}[1.]
 \item
-According to the result from part 2.2, we consider \texttt{stab.glu}, \texttt{age}, \texttt{BMI} and \texttt{WHR} the most relevant features for predicting type II diabetes.
+According to the result from part 2.2, we consider \texttt{stab.glu}, \texttt{age} and \texttt{BMI} the most relevant features for predicting type II diabetes.
 
 <<Q5.1.1, cache=TRUE, echo=FALSE>>=
-glyhb.lm <-
-  lm(glyhb ~ scale(stab.glu) + scale(age) + scale(BMI) + scale(WHR), data.df)
-glyhb.fit <- predict(glyhb.lm, data.df)
+glyhb.lm <- lm(glyhb ~ stab.glu + age + BMI, data.df)
+glyhb.lm.fit <- predict(glyhb.lm, data.df)
 
 threshold <- function(y, lambda) {
   return(ifelse(y > lambda, 1, 0))
 }
 
-err.rate <- function(lambda) {
-  rate <- mean(sapply(data.df$glyhb, function(x) threshold(x, lambda)) !=
-                 sapply(glyhb.fit, function(x) threshold(x, lambda)))
+lm.err.rate <- function(p, q, lambda) {
+  rate <- mean(sapply(p, function(y) threshold(y, lambda)) !=
+                 sapply(q, function(y) threshold(y, lambda)))
   return(rate)
 }
+
+err.rate <- lm.err.rate(data.df$glyhb, glyhb.lm.fit, lambda=7)
 @
 
 <<Q5.1.2>>=
 ################################################################################
-err.rate(lambda=7)
+err.rate
 ################################################################################
 @
 
 \item
 <<Q5.2.1, cache=TRUE, echo=FALSE>>=
-false.pos.rate <- function(lambda) {
-  rate <- mean(sapply(data.df$glyhb, function(x) threshold(x, lambda)) <
-                 sapply(glyhb.fit, function(x) threshold(x, lambda)))
+lm.false.pos.rate <- function(p, q, lambda) {
+  rate <- mean(sapply(p, function(x) threshold(x, lambda)) <
+                 sapply(q, function(x) threshold(x, lambda)))
   return(rate)
 }
 
-false.neg.rate <- function(lambda) {
-  rate <- mean(sapply(data.df$glyhb, function(x) threshold(x, lambda)) >
-                 sapply(glyhb.fit, function(x) threshold(x, lambda)))
+lm.false.neg.rate <- function(p, q, lambda) {
+  rate <- mean(sapply(p, function(x) threshold(x, lambda)) >
+                 sapply(q, function(x) threshold(x, lambda)))
   return(rate)
 }
+
+false.pos.rate <- lm.false.pos.rate(data.df$glyhb, glyhb.lm.fit, lambda=7)
+false.neg.rate <- lm.false.neg.rate(data.df$glyhb, glyhb.lm.fit, lambda=7)
 @
 
 <<Q5.2.2>>=
 ################################################################################
-false.pos.rate(lambda=7)
-false.neg.rate(lambda=7)
+false.pos.rate
+false.neg.rate
 ################################################################################
 @
 
 The False Negatives Rate is 5.29\%, which already meets the specifications. The False Positives Rate is 1.95\%.
 
+\newpage
+
 \item
 <<Q5.3.1>>=
 ################################################################################
-coefficients(glyhb.lm)
+coefficients(lm(scale(glyhb) ~ scale(stab.glu) +
+                  scale(age) + scale(BMI), data.df))
 ################################################################################
 @
 
@@ -737,13 +745,66 @@ summary(lm(glyhb ~ hdl + bp.1s + bp.1d, data.df))
 Since the $p$-value is 9.485e-07, we reject the null hypothesis that \texttt{hdl}, \texttt{bp.1s} and \texttt{bp.1d} do not have any predictive value, with 5\% significance level.
 
 \item
-According to the result from 4.6, \texttt{BMI} and \texttt{WHR} do not interact. However, if they do interact, we would choose the feature with larger influence (\texttt{BMI} in this case), because the interaction effect will reduce the influence.
+According to the result from part 4.6, \texttt{BMI} and \texttt{WHR} do not interact. However, if they do interact, we would choose the feature with larger influence (\texttt{BMI} in this case), because the interaction effect will reduce the influence.
+
+\newpage
 
 \item
+\noindent
+<<Q5.5.1, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+glyhb.lm <- lm(glyhb ~ stab.glu + BMI + WHR, data.df)
+glyhb.lm.fit <- predict(glyhb.lm, data.df)
+
+ggplot(data.df) +
+  geom_point(aes(x=glyhb.lm.fit, y=scale(glyhb-glyhb.lm.fit))) +
+  labs(title="Residuals plot of glyhb", x="predicted values", y="standardized residuals") +
+  theme(text=element_text(size=8.5))
+@
 
 \item
+<<Q5.6.1, cache=TRUE, echo=FALSE>>=
+glyhb.glm <- glm(as.numeric(glyhb.cond)-1 ~ scale(stab.glu) +
+                   scale(age) + scale(BMI), data.df, family=binomial)
+glyhb.glm.fit <- predict(glyhb.glm, data.df, type="response")
+
+glm.err.rate <- function(p, q, lambda) {
+  rate <- mean(xor(as.numeric(p)-1, q >= lambda))
+  return(rate)
+}
+
+err.rate <- glm.err.rate(data.df$glyhb.cond, glyhb.glm.fit, lambda=0.5)
+@
+
+<<Q5.6.2>>=
+################################################################################
+err.rate
+################################################################################
+@
+
+The linear regression from part 5.2 has a better performance.
 
 \item
+<<Q5.7.1, cache=TRUE, echo=FALSE>>=
+test.df <- transform(test.df,
+                     glyhb.cond=ifelse(glyhb>=7, "glyhb >=7", "glyhb < 7"))
+test.df <- transform(test.df, BMI=703*weight/height^2)
+test.df <- transform(test.df, WHR=waist/hip)
+
+glyhb.test.lm.fit <- predict(glyhb.lm, test.df)
+glyhb.test.glm.fit <- predict(glyhb.glm, test.df, type="response")
+
+lm.test.err.rate <- lm.err.rate(test.df$glyhb, glyhb.test.lm.fit, lambda=7)
+glm.test.err.rate <- glm.err.rate(test.df$glyhb.cond, glyhb.test.glm.fit, lambda=0.5)
+@
+
+<<Q5.7.2>>=
+################################################################################
+lm.test.err.rate
+glm.test.err.rate
+################################################################################
+@
+
+We obtain better performance than in the training set for both predictors.
 \end{enumerate}
 
 \newpage
@@ -850,6 +911,23 @@ According to the result from 4.6, \texttt{BMI} and \texttt{WHR} do not interact.
 \item
 <<eval=FALSE>>=
 <<Q5.2.1>>
+@
+
+\addtocounter{enumi}{2}
+
+\item
+<<eval=FALSE>>=
+<<Q5.5.1>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q5.6.1>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q5.7.1>>
 @
 \end{enumerate}
 \end{document}
