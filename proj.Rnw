@@ -11,11 +11,10 @@
 \maketitle
 
 \section{Background}
-<<echo=FALSE>>=
+<<Q1, cache=TRUE, echo=FALSE>>=
 library("ggplot2")
 library("grid")
 library("gridExtra")
-library("xtable")
 
 data.df <- na.omit(read.csv("diabetes.csv"))
 @
@@ -24,7 +23,7 @@ data.df <- na.omit(read.csv("diabetes.csv"))
 \begin{enumerate}[1.]
 \item
 \noindent
-<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=3>>=
+<<Q2.1, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=3>>=
 glyhb.histogram <- ggplot(data.df) +
   geom_histogram(aes(x=glyhb), binwidth=0.5)
 
@@ -44,7 +43,7 @@ The mean, median and mode of \texttt{glyhb} are all approximately 5. The distrib
 
 \item
 \noindent
-<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=3>>=
+<<Q2.2, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=3>>=
 chol.histogram <- ggplot(data.df) +
   geom_histogram(aes(x=chol), binwidth=15)
 
@@ -66,7 +65,7 @@ The mean, median and mode of \texttt{chol} are all approximately 200. The distri
 
 \item
 \noindent
-<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+<<Q2.3, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 bp.1d.bp.1s.scatterplot <- ggplot(data.df) +
   geom_point(aes(x=bp.1d, y=bp.1s)) +
   labs(title="Scatterplot of bp.1d vs bp.1s") +
@@ -110,7 +109,7 @@ The scatterplot of \texttt{bp.1s} and \texttt{bp.1d} is near-linear, so they are
 \texttt{time.ppn}: The two distributions have small difference, so it MAY NOT BE a relevant feature.
 \end{itemize}
 
-<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=12>>=
+<<Q2.4, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=9, fig.height=12>>=
 data.df$glyhb.cond <- NA
 data.df[data.df$glyhb>=7, ]$glyhb.cond <- "glyhb >= 7"
 data.df[data.df$glyhb<7, ]$glyhb.cond <- "glyhb < 7"
@@ -134,7 +133,7 @@ do.call(grid.arrange, c(feature.boxplots, ncol=3,
 
 \item
 \noindent
-<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+<<Q2.5, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 data.df$BMI <- 703*data.df$weight/data.df$height^2
 data.df$WHR <- data.df$waist/data.df$hip
 
@@ -185,7 +184,7 @@ E(X^2) =\frac{\alpha(\alpha+1)}{\beta^2}
 \hat{\beta}_{MOM} = \frac{\overline{X}_n^2}{\frac{1}{n}\sum_{i=1}^n(X_i-\overline{X}_n)^2}
 \end{cases*}$$
 
-<<echo=FALSE>>=
+<<Q3.1.1, cache=TRUE, echo=FALSE>>=
 gamma.boot <- function(x) {
   alpha.mom <- mean(x)^2/var(x)
   beta.mom <- mean(x)/var(x)
@@ -209,13 +208,13 @@ gamma.boot <- function(x) {
 CI.BMI <- gamma.boot(data.df$BMI)
 @
 
-<<>>=
+<<Q3.1.2>>=
 ################################################################################
 CI.BMI
 ################################################################################
 @
 
-<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+<<Q3.1.3, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 ggplot(data.df) +
   geom_histogram(aes(x=BMI, y=..density..), binwidth=2, col="white") +
   stat_function(fun=function(x)
@@ -230,7 +229,7 @@ ggplot(data.df) +
 $$\hat{\mu}_{MLE} = \overline{X}_n$$
 $$\hat{\sigma}_{MLE}^2 = \frac{1}{n}\sum_{i=1}^n(X_i-\overline{X}_n)^2$$
 
-<<echo=FALSE>>=
+<<Q3.2.1, cache=TRUE, echo=FALSE>>=
 normal.boot <- function(x) {
   mu.mle <- mean(x)
   sigma.mle <- sd(x)
@@ -254,13 +253,13 @@ normal.boot <- function(x) {
 CI.WHR <- normal.boot(data.df$WHR)
 @
 
-<<>>=
+<<Q3.2.2>>=
 ################################################################################
 CI.WHR
 ################################################################################
 @
 
-<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+<<Q3.2.3, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 ggplot(data.df) +
   geom_histogram(aes(x=WHR, y=..density..), binwidth=0.025, col="white") +
   stat_function(fun=function(x)
@@ -272,7 +271,7 @@ ggplot(data.df) +
 \newpage
 
 \item
-<<echo=FALSE>>=
+<<Q3.3.1, cache=TRUE, echo=FALSE>>=
 data.df$gender.glyhb.cond <- NA
 data.df[data.df$gender=="male" & data.df$glyhb>=7, ]$gender.glyhb.cond <-
   "male & (glyhb >= 7)"
@@ -314,13 +313,13 @@ CIs.BMI <- lapply(conditions, function(x) {
 names(CIs.BMI) <- conditions
 @
 
-<<>>=
+<<Q3.3.2>>=
 ################################################################################
 CIs.BMI
 ################################################################################
 @
 
-<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+<<Q3.3.3, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 ggplot(data.df) +
   geom_boxplot(aes(x=factor(gender.glyhb.cond, levels=conditions), y=BMI)) +
   labs(title="Boxplots of BMI for each gender and glyhb condition",
@@ -339,7 +338,7 @@ People with type II diabetes (\texttt{glyhb >= 7}) have larger confidence interv
 
 \newpage
 
-<<echo=FALSE>>=
+<<Q3.3.4, cache=TRUE, echo=FALSE>>=
 CIs.WHR <- lapply(conditions, function(x) {
   gender.glyhb.df <- subset(data.df, gender.glyhb.cond==x)
   CIs.WHR <- normal.boot(gender.glyhb.df$WHR)
@@ -348,13 +347,13 @@ CIs.WHR <- lapply(conditions, function(x) {
 names(CIs.WHR) <- conditions
 @
 
-<<>>=
+<<Q3.3.5>>=
 ################################################################################
 CIs.WHR
 ################################################################################
 @
 
-<<cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
+<<Q3.3.6, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
 ggplot(data.df) +
   geom_boxplot(aes(x=factor(gender.glyhb.cond, levels=conditions), y=WHR)) +
   labs(title="Boxplots of WHR for each gender and glyhb condition",
@@ -441,7 +440,7 @@ kruskal.test(data.df$WHR, as.factor(data.df$glyhb.cond))
 Since the $p$-value is 9.95e-05, which is smaller than 0.05, we reject the null hypothesis that \texttt{WHR} has equal means for those with type II diabetes and those without, with 5\% significance interval.
 
 \item
-<<echo=FALSE>>=
+<<cache=TRUE, echo=FALSE>>=
 pi.est <- function(x, y) {
   w <- 0
   for (i in 1:length(x)) {
@@ -489,7 +488,70 @@ CI.pi.male.WHR
 ################################################################################
 @
 
+\newpage
+
 \item
+From 3.2, we know that \texttt{WHR} has a normal distribution. We assume all patients come from the same population, so the standard deviation is constant.
+
+$$H_0: N(\mu_0, \sigma^2)$$
+$$H_1: N(\mu_1, \sigma^2)$$
+
+<<Q4.4.1, cache=TRUE, echo=FALSE>>=
+mean.male.glyhb.geq7.WHR <- mean(male.glyhb.geq7.WHR)
+mean.male.glyhb.l7.WHR <- mean(male.glyhb.l7.WHR)
+sd.male.WHR <- sd(subset(data.df, gender=="male")$WHR)
+@
+
+<<Q4.4.2>>=
+################################################################################
+mean.male.glyhb.geq7.WHR
+mean.male.glyhb.l7.WHR
+sd.male.WHR
+################################################################################
+@
+
+$$\mu_0 = 0.9058419, \mu_1 = 0.9489365, \sigma = 0.06821165$$
+
+\begin{align*}
+lik(x) & = \frac{f_0(x)}{f_1(x)} \\
+& = \frac{\frac{1}{\sqrt{2\pi\sigma}}e^{-\frac{(x-\mu_0)^2}{2}}}{\frac{1}{\sqrt{2\pi\sigma}}e^{-\frac{(x-\mu_1)^2}{2}}} \\
+& = e^{-2(\mu_1-\mu_0)x + (\mu_1^2-\mu_0^2)}
+\end{align*}
+
+Let $T := X$.
+\begin{align*}
+\alpha & = P(T > t \mid H_0) \\
+& = P(\frac{T-\mu_0}{\sigma} > \frac{t-\mu_0}{\sigma}) \\
+& = 1 - \Phi\left(\frac{t-\mu_0}{\sigma}\right) \\
+& \implies \\
+t & = \Phi^{-1}(\alpha)\sigma + \mu_0
+\end{align*}
+\begin{align*}
+\beta & = P(T < t \mid H_1) \\
+& = P(\frac{T-\mu_1}{\sigma} < \frac{t-\mu_1}{\sigma}) \\
+& = \Phi\left(\frac{t-\mu_1}{\sigma}\right) \\
+& = \Phi\left(\frac{\Phi^{-1}(\alpha)\sigma + \mu_0 - \mu_1}{\sigma}\right)
+\end{align*}
+
+<<Q4.4.3, cache=TRUE, echo=FALSE>>=
+mu.0 <- mean.male.glyhb.l7.WHR
+mu.1 <- mean.male.glyhb.geq7.WHR
+sigma <- sd.male.WHR
+alpha <- 0.05
+
+t <- qnorm(1-alpha)*sigma + mu.0
+beta <- pnorm((qnorm(1-alpha)*sigma + mu.0 - mu.1)/sigma)
+power <- 1 - beta
+@
+
+<<Q4.4.4>>=
+################################################################################
+t
+power
+################################################################################
+@
+
+$$\alpha \leqslant 5\% \implies 1-\beta \leqslant 0.1555122$$
 
 \item
 
@@ -512,4 +574,71 @@ CI.pi.male.WHR
 
 \item
 \end{enumerate}
+
+\newpage
+
+\appendix
+\section{Appendix}
+\subsection{Background}
+<<eval=FALSE>>=
+<<Q1>>
+@
+
+\subsection{Accessing Data, Visualization and Summarization}
+\begin{enumerate}[1.]
+\item
+<<eval=FALSE>>=
+<<Q2.1>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q2.2>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q2.3>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q2.4>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q2.5>>
+@
+\end{enumerate}
+
+\subsection{Parametric Inference}
+\begin{enumerate}[1.]
+\item
+<<eval=FALSE>>=
+<<Q3.1.1>>
+
+<<Q3.1.3>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q3.2.1>>
+
+<<Q3.2.3>>
+@
+
+\item
+<<eval=FALSE>>=
+<<Q3.3.1>>
+
+<<Q3.3.3>>
+
+<<Q3.3.4>>
+
+<<Q3.3.6>>
+@
+\end{enumerate}
+
+\subsection{Testing}
 \end{document}
