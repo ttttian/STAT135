@@ -484,9 +484,11 @@ CI.pi.male.WHR <- quantile(pi.male.WHR.samples, probs=c(0.025, 0.975))
 <<Q4.3.2>>=
 ################################################################################
 pi.male.BMI
+################################################################################
 CI.pi.male.BMI
 ################################################################################
 pi.male.WHR
+################################################################################
 CI.pi.male.WHR
 ################################################################################
 @
@@ -508,7 +510,9 @@ sd.male.WHR <- sd(subset(data.df, gender=="male")$WHR)
 <<Q4.4.2>>=
 ################################################################################
 mean.male.glyhb.geq7.WHR
+################################################################################
 mean.male.glyhb.l7.WHR
+################################################################################
 sd.male.WHR
 ################################################################################
 @
@@ -550,6 +554,7 @@ power <- 1 - beta
 <<Q4.4.4>>=
 ################################################################################
 t
+################################################################################
 power
 ################################################################################
 @
@@ -724,6 +729,7 @@ false.neg.rate <- lm.false.neg.rate(data.df$glyhb, glyhb.lm.fit, lambda=7)
 <<Q5.2.2>>=
 ################################################################################
 false.pos.rate
+################################################################################
 false.neg.rate
 ################################################################################
 @
@@ -733,16 +739,21 @@ The False Negatives Rate is 5.29\%, which already meets the specifications. The 
 \newpage
 
 \item
-<<Q5.3.1>>=
+<<Q5.3.1, cache=TRUE, echo=FALSE>>=
+glyhb.lm.coeff <-
+  coefficients(lm(scale(glyhb) ~ scale(stab.glu) +
+                    scale(age) + scale(BMI), data.df))
+@
+
+<<Q5.3.2>>=
 ################################################################################
-coefficients(lm(scale(glyhb) ~ scale(stab.glu) +
-                  scale(age) + scale(BMI), data.df))
+glyhb.lm.coeff
 ################################################################################
 @
 
 \texttt{stab.glu} has the largest influence.
 
-<<Q5.3.2>>=
+<<Q5.3.3>>=
 ################################################################################
 summary(lm(glyhb ~ hdl + bp.1s + bp.1d, data.df))
 ################################################################################
@@ -763,6 +774,7 @@ glyhb.lm.fit <- predict(glyhb.lm, data.df)
 
 ggplot(data.df) +
   geom_point(aes(x=glyhb.lm.fit, y=scale(glyhb-glyhb.lm.fit))) +
+  geom_abline(aes(intercept=0, slope=0)) +
   labs(title="Residuals plot of glyhb",
        x="predicted values", y="standardized residuals") +
   theme(text=element_text(size=8.5))
@@ -921,7 +933,12 @@ We obtain better performance than in the training set for both predictors.
 <<Q5.2.1>>
 @
 
-\addtocounter{enumi}{2}
+\item
+<<eval=FALSE>>=
+<<Q5.3.1>>
+@
+
+\addtocounter{enumi}{1}
 
 \item
 <<eval=FALSE>>=
