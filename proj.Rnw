@@ -593,7 +593,7 @@ data.df$WHR.std <- factor(NA)
 levels(data.df$WHR.std) <- WHR.labels
 
 gender.age.cond <-
-  data.df$gender=="male" & data.df$age >= 20 & data.df$age <= 29
+  data.df$gender=="male" & data.df$age <= 29
 data.df[gender.age.cond, ]$WHR.std <-
   cut(data.df[gender.age.cond, ]$WHR,
       breaks=c(0, 0.83, 0.88, 0.94, Inf), labels=WHR.labels)
@@ -623,7 +623,7 @@ data.df[gender.age.cond, ]$WHR.std <-
       breaks=c(0, 0.91, 0.98, 1.03, Inf), labels=WHR.labels)
 
 gender.age.cond <-
-  data.df$gender=="female" & data.df$age >= 20 & data.df$age <= 29
+  data.df$gender=="female" & data.df$age <= 29
 data.df[gender.age.cond, ]$WHR.std <-
   cut(data.df[gender.age.cond, ]$WHR,
       breaks=c(0, 0.71, 0.77, 0.82, Inf), labels=WHR.labels)
@@ -686,7 +686,8 @@ The interaction effect between \texttt{BMI} and \texttt{WHR} is not significant.
 According to the result from part 2.2, we consider \texttt{stab.glu}, \texttt{age} and \texttt{BMI} the most relevant features for predicting type II diabetes.
 
 <<Q5.1.1, cache=TRUE, echo=FALSE>>=
-glyhb.lm <- lm(glyhb ~ stab.glu + age + BMI, data.df)
+glyhb.lm <- lm(glyhb ~ scale(stab.glu) + scale(age) + scale(BMI) +
+                 scale(WHR) + scale(hdl) + scale(bp.1s) + scale(bp.1d), data.df)
 glyhb.lm.fit <- predict(glyhb.lm, data.df)
 
 threshold <- function(y, lambda) {
@@ -734,15 +735,13 @@ false.neg.rate
 ################################################################################
 @
 
-The False Negatives Rate is 5.29\%, which already meets the specifications. The False Positives Rate is 1.95\%.
+The False Negatives Rate is 5.29\%, which already meets the specifications. The False Positives Rate is 2.23\%.
 
 \newpage
 
 \item
 <<Q5.3.1, cache=TRUE, echo=FALSE>>=
-glyhb.lm.coeff <-
-  coefficients(lm(scale(glyhb) ~ scale(stab.glu) +
-                    scale(age) + scale(BMI), data.df))
+glyhb.lm.coeff <- coefficients(glyhb.lm)
 @
 
 <<Q5.3.2>>=
@@ -751,15 +750,15 @@ glyhb.lm.coeff
 ################################################################################
 @
 
-\texttt{stab.glu} has the largest influence.
+Since \texttt{stab.glu} has the largest coefficient, it has the largest influence on the model.
 
 <<Q5.3.3>>=
 ################################################################################
-summary(lm(glyhb ~ hdl + bp.1s + bp.1d, data.df))
+summary(glyhb.lm)
 ################################################################################
 @
 
-Since the $p$-value is 9.485e-07, we reject the null hypothesis that \texttt{hdl}, \texttt{bp.1s} and \texttt{bp.1d} do not have any predictive value, with 5\% significance level.
+Since the $p$-values for \texttt{hdl}, \texttt{bp.1s} and \texttt{bp.1d} are 0.395, 0.36 and 0.814 respectively, we fail to reject the null hypothesis that \texttt{hdl}, \texttt{bp.1s} and \texttt{bp.1d} do not have any predictive value, with 5\% significance level.
 
 \item
 According to the result from part 4.6, \texttt{BMI} and \texttt{WHR} do not interact. However, if they do interact, we would choose the feature with larger influence (\texttt{BMI} in this case), because the interaction effect will reduce the influence.
@@ -768,22 +767,47 @@ According to the result from part 4.6, \texttt{BMI} and \texttt{WHR} do not inte
 
 \item
 \noindent
-<<Q5.5.1, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=2.5>>=
-glyhb.lm <- lm(glyhb ~ stab.glu + BMI + WHR, data.df)
-glyhb.lm.fit <- predict(glyhb.lm, data.df)
+<<Q5.5.1, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=3>>=
+ggplot(data.df) +
+  geom_point(aes(x=stab.glu, y=scale(glyhb-glyhb.lm.fit))) +
+  geom_abline(aes(intercept=0, slope=0)) +
+  labs(title="Residuals plot of glyhb vs stab.glu",
+       y="standardized residuals") +
+  theme(text=element_text(size=8.5))
+@
 
+<<Q5.5.2, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=3>>=
+ggplot(data.df) +
+  geom_point(aes(x=BMI, y=scale(glyhb-glyhb.lm.fit))) +
+  geom_abline(aes(intercept=0, slope=0)) +
+  labs(title="Residuals plot of glyhb vs BMI",
+       y="standardized residuals") +
+  theme(text=element_text(size=8.5))
+@
+
+<<Q5.5.3, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=3>>=
+ggplot(data.df) +
+  geom_point(aes(x=WHR, y=scale(glyhb-glyhb.lm.fit))) +
+  geom_abline(aes(intercept=0, slope=0)) +
+  labs(title="Residuals plot of glyhb vs WHR",
+       y="standardized residuals") +
+  theme(text=element_text(size=8.5))
+@
+
+<<Q5.5.4, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=3>>=
 ggplot(data.df) +
   geom_point(aes(x=glyhb.lm.fit, y=scale(glyhb-glyhb.lm.fit))) +
   geom_abline(aes(intercept=0, slope=0)) +
-  labs(title="Residuals plot of glyhb",
+  labs(title="Residuals plot of glyhb vs predicted values",
        x="predicted values", y="standardized residuals") +
   theme(text=element_text(size=8.5))
 @
 
 \item
 <<Q5.6.1, cache=TRUE, echo=FALSE>>=
-glyhb.glm <- glm(as.numeric(glyhb.cond)-1 ~ scale(stab.glu) +
-                   scale(age) + scale(BMI), data.df, family=binomial)
+glyhb.glm <- glm(as.numeric(glyhb.cond)-1 ~ scale(stab.glu) + scale(age) +
+                   scale(BMI) + scale(WHR) + scale(hdl) + scale(bp.1s) +
+                   scale(bp.1d), data.df, family=binomial)
 glyhb.glm.fit <- predict(glyhb.glm, data.df, type="response")
 
 glm.err.rate <- function(p, q, lambda) {
@@ -824,7 +848,7 @@ glm.test.err.rate
 ################################################################################
 @
 
-We obtain better performance than in the training set for both predictors.
+We obtain slightly better performance than in the training set for both predictors.
 \end{enumerate}
 
 \newpage
@@ -943,6 +967,12 @@ We obtain better performance than in the training set for both predictors.
 \item
 <<eval=FALSE>>=
 <<Q5.5.1>>
+
+<<Q5.5.2>>
+
+<<Q5.5.3>>
+
+<<Q5.5.4>>
 @
 
 \item
