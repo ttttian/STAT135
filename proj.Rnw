@@ -688,7 +688,6 @@ According to the result from part 2.2, we consider \texttt{stab.glu}, \texttt{ag
 <<Q5.1.1, cache=TRUE, echo=FALSE>>=
 glyhb.lm <- lm(glyhb ~ scale(stab.glu) + scale(age) + scale(BMI) +
                  scale(WHR) + scale(hdl) + scale(bp.1s) + scale(bp.1d), data.df)
-glyhb.lm.fit <- predict(glyhb.lm, data.df)
 
 threshold <- function(y, lambda) {
   return(ifelse(y > lambda, 1, 0))
@@ -700,7 +699,7 @@ lm.err.rate <- function(p, q, lambda) {
   return(rate)
 }
 
-err.rate <- lm.err.rate(data.df$glyhb, glyhb.lm.fit, lambda=7)
+err.rate <- lm.err.rate(data.df$glyhb, glyhb.lm$fitted, lambda=7)
 @
 
 <<Q5.1.2>>=
@@ -723,8 +722,8 @@ lm.false.neg.rate <- function(p, q, lambda) {
   return(rate)
 }
 
-false.pos.rate <- lm.false.pos.rate(data.df$glyhb, glyhb.lm.fit, lambda=7)
-false.neg.rate <- lm.false.neg.rate(data.df$glyhb, glyhb.lm.fit, lambda=7)
+false.pos.rate <- lm.false.pos.rate(data.df$glyhb, glyhb.lm$fitted, lambda=7)
+false.neg.rate <- lm.false.neg.rate(data.df$glyhb, glyhb.lm$fitted, lambda=7)
 @
 
 <<Q5.2.2>>=
@@ -740,19 +739,15 @@ The False Negatives Rate is 5.29\%, which already meets the specifications. The 
 \newpage
 
 \item
-<<Q5.3.1, cache=TRUE, echo=FALSE>>=
-glyhb.lm.coeff <- coefficients(glyhb.lm)
-@
-
-<<Q5.3.2>>=
+<<Q5.3.1>>=
 ################################################################################
-glyhb.lm.coeff
+glyhb.lm$coefficients
 ################################################################################
 @
 
 Since \texttt{stab.glu} has the largest coefficient, it has the largest influence on the model.
 
-<<Q5.3.3>>=
+<<Q5.3.2>>=
 ################################################################################
 summary(glyhb.lm)
 ################################################################################
@@ -769,39 +764,26 @@ According to the result from part 4.6, \texttt{BMI} and \texttt{WHR} do not inte
 \noindent
 <<Q5.5.1, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=3>>=
 ggplot(data.df) +
-  geom_point(aes(x=stab.glu, y=scale(glyhb-glyhb.lm.fit))) +
-  geom_abline(aes(intercept=0, slope=0)) +
-  labs(title="Residuals plot of glyhb vs stab.glu",
-       y="standardized residuals") +
-  theme(text=element_text(size=8.5))
-@
-
-<<Q5.5.2, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=3>>=
-ggplot(data.df) +
-  geom_point(aes(x=BMI, y=scale(glyhb-glyhb.lm.fit))) +
-  geom_abline(aes(intercept=0, slope=0)) +
-  labs(title="Residuals plot of glyhb vs BMI",
-       y="standardized residuals") +
-  theme(text=element_text(size=8.5))
-@
-
-<<Q5.5.3, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=3>>=
-ggplot(data.df) +
-  geom_point(aes(x=WHR, y=scale(glyhb-glyhb.lm.fit))) +
-  geom_abline(aes(intercept=0, slope=0)) +
-  labs(title="Residuals plot of glyhb vs WHR",
-       y="standardized residuals") +
-  theme(text=element_text(size=8.5))
-@
-
-<<Q5.5.4, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=3>>=
-ggplot(data.df) +
-  geom_point(aes(x=glyhb.lm.fit, y=scale(glyhb-glyhb.lm.fit))) +
+  geom_point(aes(x=glyhb.lm$fitted, y=scale(glyhb.lm$residuals))) +
   geom_abline(aes(intercept=0, slope=0)) +
   labs(title="Residuals plot of glyhb vs predicted values",
        x="predicted values", y="standardized residuals") +
   theme(text=element_text(size=8.5))
+
 @
+
+<<Q5.5.2, cache=TRUE, echo=FALSE, fig.align="center", fig.pos="H", fig.width=5, fig.height=3>>=
+glyhb.log.lm <- lm(log(glyhb) ~ scale(stab.glu) + scale(age) + scale(BMI) +
+                 scale(WHR) + scale(hdl) + scale(bp.1s) + scale(bp.1d), data.df)
+ggplot(data.df) +
+  geom_point(aes(x=glyhb.log.lm$fitted, y=scale(glyhb.log.lm$residuals))) +
+  geom_abline(aes(intercept=0, slope=0)) +
+  labs(title="Log Residuals plot of glyhb vs predicted values",
+       x="predicted values", y="standardized log(residuals)") +
+  theme(text=element_text(size=8.5))
+@
+
+We use log transformation to stabilizes the variance of the residual errors.
 
 \item
 <<Q5.6.1, cache=TRUE, echo=FALSE>>=
@@ -957,22 +939,13 @@ We obtain slightly better performance than in the training set for both predicto
 <<Q5.2.1>>
 @
 
-\item
-<<eval=FALSE>>=
-<<Q5.3.1>>
-@
-
-\addtocounter{enumi}{1}
+\addtocounter{enumi}{2}
 
 \item
 <<eval=FALSE>>=
 <<Q5.5.1>>
 
 <<Q5.5.2>>
-
-<<Q5.5.3>>
-
-<<Q5.5.4>>
 @
 
 \item
